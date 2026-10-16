@@ -1,0 +1,42 @@
+[project]
+name = "zhishu"
+version = "0.1.0"
+description = "仓配自助问数 LogiQL · 基于元数据知识库与 LangGraph 的 NL2SQL 智能问数系统"
+# 与履约知识助手保持一致，上限锁到 3.13 之前：若干依赖（torch / langchain 系）
+# 尚未提供 3.13+ 的 wheel，不设上限时 uv 会尝试为更高版本解析并失败
+requires-python = ">=3.11,<3.13"
+# 依赖按「实际 import 过」核对过一遍：移除未实际引用的 grandalf /
+# langchain-deepseek / huggingface-hub（全仓 0 引用），
+# 补上 langchain-openai（llm.py 走 init_chat_model(model_provider=openai)，
+# 之前靠间接依赖带进来，属于声明缺失——干净环境装上会直接 ImportError）。
+dependencies = [
+    # --- 服务与配置 ---
+    "fastapi[standard]==0.128.0",
+    "omegaconf==2.3.0",
+    "pyyaml==6.0.3",
+    "loguru==0.7.3",
+    # --- 编排与模型 ---
+    "langchain==1.2.7",
+    "langgraph==1.0.7",
+    "langchain-openai>=1.7.2",
+    "langchain-huggingface==1.2.1",
+    # --- 存储与检索 ---
+    "sqlalchemy==2.0.46",
+    # SQLAlchemy 异步 MySQL 驱动，连接串里用 mysql+asyncmy://（不在代码中 import）
+    "asyncmy==0.2.11",
+    # MySQL 8 默认认证插件 caching_sha2_password 需要，缺失会报 Authentication failed
+    "cryptography==46.0.4",
+    "elasticsearch[async]>=8,<9",
+    "qdrant-client==1.16.2",
+    # --- 中文分词（关键词扩展节点）---
+    "jieba==0.42.1",
+]
+
+# 项目是平铺布局（app/ conf/ prompts/ docker/ 同级），setuptools 无法自动推断顶层包，
+# 这里显式声明，否则 pip install -e . 会报 "Multiple top-level packages discovered"。
+[tool.setuptools]
+packages = ["app", "conf"]
+
+[tool.setuptools.package-data]
+"app" = ["**/*.yaml", "**/*.yml", "**/*.jinja", "**/*.jinja2", "**/*.txt"]
+"conf" = ["*.yaml", "*.yml"]
