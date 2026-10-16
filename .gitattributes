@@ -1,0 +1,7 @@
+# MySQL 初始化脚本会被挂载进 Linux 容器执行，必须保持 LF；
+# 否则 Windows 端检出时被转成 CRLF，容器里会报 "/bin/bash^M: bad interpreter"。
+*.sh text eol=lf
+
+# Dockerfile / compose / yaml 同样只在 Linux 侧消费
+Dockerfile text eol=lf
+docker-compose.yaml text eol=lf

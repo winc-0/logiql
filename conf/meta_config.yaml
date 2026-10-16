@@ -1,0 +1,288 @@
+tables:
+  - name: dim_warehouse
+    role: dim
+    description: 仓库维度表，描述第三方仓配服务商在全国运营的仓库及其属性，用于按仓、按大区、按仓型统计履约结果。
+    columns:
+      - name: warehouse_id
+        role: primary_key
+        description: 仓库唯一标识。
+        alias: [ 仓库ID, 仓编码 ]
+        sync: false
+
+      - name: warehouse_name
+        role: dimension
+        description: 仓库名称，如华北1仓、华东1仓。用户说「华北1仓」「1仓」时匹配本列。
+        alias: [ 仓库名称, 仓名, 哪个仓 ]
+        sync: true
+
+      - name: region_name
+        role: dimension
+        description: 仓库所属大区，取值为华北、华东、华南、华中、西南。用户问「华北」时按本列筛选。
+        alias: [ 大区, 区域, 片区 ]
+        sync: true
+
+      - name: city
+        role: dimension
+        description: 仓库所在城市，如北京、上海、广州、杭州、天津、深圳、武汉、成都。
+        alias: [ 城市, 所在城市, 开仓城市 ]
+        sync: true
+
+      - name: warehouse_type
+        role: dimension
+        description: 仓型，取值为中心仓、区域仓、前置仓、冷链仓。冷链仓只处理生鲜品类。
+        alias: [ 仓型, 仓库类型, 类型 ]
+        sync: true
+
+
+  - name: dim_cargo
+    role: dim
+    description: 货品维度表，描述托管在仓库中的货物属性，用于按品类、按品牌统计出库结构。
+    columns:
+      - name: cargo_id
+        role: primary_key
+        description: 货品唯一标识。
+        alias: [ 货品ID, 货物ID ]
+        sync: false
+
+      - name: cargo_name
+        role: dimension
+        description: 货品名称，如智能手机、变频空调、进口牛排。
+        alias: [ 货品名称, 商品名称, 货名 ]
+        sync: true
+
+      - name: cargo_category
+        role: dimension
+        description: 货品品类，取值为3C数码、家用电器、服装服饰、食品饮料、生鲜冷链、家居建材、美妆个护、母婴用品。
+        alias: [ 品类, 类别, 货类 ]
+        sync: true
+
+      - name: cargo_brand
+        role: dimension
+        description: 货品所属品牌，如华为、苹果、小米、美的、海尔、耐克、波司登、蒙牛、兰蔻、欧莱雅。
+        alias: [ 品牌, 牌子 ]
+        sync: true
+
+      - name: unit_price
+        role: dimension
+        description: 货品单价（元），是货品的固有属性，不是出库单的成交金额。统计出库货值应使用事实表的 outbound_amount。
+        alias: [ 单价, 货值单价 ]
+        sync: false
+
+      - name: unit_weight_kg
+        role: dimension
+        description: 货品单件重量（kg），影响运费计算，本身不作为统计指标。
+        alias: [ 单件重量, 件重 ]
+        sync: false
+
+
+  - name: dim_shipper
+    role: dim
+    description: 货主维度表，描述委托第三方仓配服务的发货客户（货主）及其等级，用于按客户统计出库量。
+    columns:
+      - name: shipper_id
+        role: primary_key
+        description: 货主唯一标识。
+        alias: [ 货主ID, 客户ID ]
+        sync: false
+
+      - name: shipper_name
+        role: dimension
+        description: 货主名称，如京东零售、小米科技、美的集团。
+        alias: [ 货主名称, 客户名称, 发货方 ]
+        sync: true
+
+      - name: shipper_level
+        role: dimension
+        description: 客户等级，取值为战略、核心、普通。等级越高出货量越大。
+        alias: [ 客户等级, 货主等级, 等级 ]
+        sync: true
+
+      - name: industry
+        role: dimension
+        description: 货主所属行业，如电商零售、3C制造、家电制造、服装纺织、食品饮料、生鲜供应、家居建材、美妆个护、母婴用品。
+        alias: [ 行业, 所属行业 ]
+        sync: true
+
+
+  - name: dim_carrier
+    role: dim
+    description: 承运商维度表，描述承担干线与末端派送的承运商及其时效产品，用于按承运商统计妥投质量。
+    columns:
+      - name: carrier_id
+        role: primary_key
+        description: 承运商唯一标识。
+        alias: [ 承运商ID, 快递ID ]
+        sync: false
+
+      - name: carrier_name
+        role: dimension
+        description: 承运商名称，如顺丰速运、京东物流、中通快运、圆通速递、德邦物流、邮政EMS。
+        alias: [ 承运商, 快递公司, 物流公司 ]
+        sync: true
+
+      - name: carrier_type
+        role: dimension
+        description: 承运商类型，取值为自营、加盟、专线、快运网络。
+        alias: [ 承运商类型, 合作模式 ]
+        sync: true
+
+      - name: service_level
+        role: dimension
+        description: 承运商主打时效产品，取值为次日达、隔日达、标准陆运、经济。时效越快运费越高。
+        alias: [ 时效产品, 时效, 服务等级 ]
+        sync: true
+
+
+  - name: dim_date
+    role: dim
+    description: 日期维度表，描述出库日期的年月季度属性，用于时间范围筛选与趋势分组。
+    columns:
+      - name: date_id
+        role: primary_key
+        description: 日期唯一标识，格式为 YYYYMMDD 的整数，与出库事实表的 date_id 关联。
+        alias: [ 日期ID ]
+        sync: false
+
+      - name: year
+        role: dimension
+        description: 年份，如2024、2025。
+        alias: [ 年, 年份 ]
+        sync: true
+
+      - name: quarter
+        role: dimension
+        description: 季度，取值为Q1、Q2、Q3、Q4。
+        alias: [ 季度 ]
+        sync: true
+
+      - name: month
+        role: dimension
+        description: 月份，取值1到12。
+        alias: [ 月, 月份 ]
+        sync: false
+
+      - name: day
+        role: dimension
+        description: 日，取值1到31。
+        alias: [ 日, 天 ]
+        sync: false
+
+
+  - name: fact_outbound
+    role: fact
+    description: 出库单事实表，记录每一笔出库单的货值、件数、运费与最终履约结果。
+      出库时写入，妥投后回填时效与妥投结果，是统计出库量、妥投率、时效的核心表。
+    columns:
+      - name: outbound_id
+        role: primary_key
+        description: 出库单唯一标识。统计出库单量时对出库单号去重计数，或直接 COUNT(*)。
+        alias: [ 出库单号, 出库单ID, 运单号, 单号 ]
+        sync: false
+
+      - name: shipper_id
+        role: foreign_key
+        description: 关联货主维度的外键。
+        alias: [ 货主ID, 客户ID ]
+        sync: false
+
+      - name: cargo_id
+        role: foreign_key
+        description: 关联货品维度的外键。
+        alias: [ 货品ID, 商品ID ]
+        sync: false
+
+      - name: date_id
+        role: foreign_key
+        description: 关联时间维度的外键，表示出库日期。
+        alias: [ 日期, 出库日期 ]
+        sync: false
+
+      - name: warehouse_id
+        role: foreign_key
+        description: 关联仓库维度的外键，表示出库仓。
+        alias: [ 仓库ID, 出库仓ID ]
+        sync: false
+
+      - name: carrier_id
+        role: foreign_key
+        description: 关联承运商维度的外键，表示承担本单派送的承运商。
+        alias: [ 承运商ID ]
+        sync: false
+
+      - name: outbound_quantity
+        role: measure
+        description: 该出库单的出库件数。统计「出库了多少件」时用本列求和。
+        alias: [ 出库件数, 件数, 出库数量 ]
+        sync: false
+
+      - name: outbound_amount
+        role: measure
+        description: 该出库单的出库货值（元），等于货品单价乘以件数。这是出库货物的价值，
+          不是运费，也不是服务收入；问「运费」「成本」时不要使用本列。
+        alias: [ 出库货值, 出库金额, 货值, 金额 ]
+        sync: false
+
+      - name: outbound_hours
+        role: measure
+        description: 出库时效，从货主下单到完成出库的小时数。数值越小越好。
+        alias: [ 出库时效, 出库时长, 备货时长 ]
+        sync: false
+
+      - name: is_ontime_outbound
+        role: measure
+        description: 是否按时出库标记，1 表示出库时效在 24 小时内，0 表示超时。
+          求出库及时率时用 SUM(本列) / COUNT(*)，不能直接求和当数量用。
+        alias: [ 是否按时出库, 出库及时标记 ]
+        sync: false
+
+      - name: delivery_hours
+        role: measure
+        description: 妥投时长，从出库到签收的小时数。未妥投的单据该值为 0，
+          求平均妥投时长时应先过滤 is_delivered = 1，否则 0 值会把均值拉低。
+        alias: [ 妥投时长, 派送时长, 送达时长 ]
+        sync: false
+
+      - name: is_delivered
+        role: measure
+        description: 是否妥投标记，1 表示已签收，0 表示丢件或拒收。
+          求妥投率时用 SUM(本列) / COUNT(*)。
+        alias: [ 是否妥投, 是否签收, 妥投标记 ]
+        sync: false
+
+      - name: is_ontime_delivery
+        role: measure
+        description: 是否准时妥投标记，1 表示在承运商承诺时效内完成签收，0 表示超时。
+          求妥投及时率（准时率）时用 SUM(本列) / COUNT(*)。
+        alias: [ 是否准时妥投, 准时妥投标记, 是否及时 ]
+        sync: false
+
+      - name: freight_amount
+        role: measure
+        description: 该出库单的运费（元），由首重费加续重费构成，时效越快的承运商费率越高。
+          这是本单发生的物流成本，与出库货值是两个完全不同的口径，不可混用。
+        alias: [ 运费, 物流费用, 配送费 ]
+        sync: false
+
+
+metrics:
+  - name: OUTBOUND_COUNT
+    description: 出库单量，指完成的出库单笔数，等价于对出库单号去重计数 COUNT(outbound_id)。
+      在 fact_outbound 上直接 COUNT(*) 即为本指标。
+    relevant_columns:
+      - fact_outbound.outbound_id
+    alias: [ 出库单量, 出库量, 出库笔数, 单量 ]
+
+  - name: OUTBOUND_AMOUNT
+    description: 出库货值，指所有出库单的出库金额总和，等于 SUM(outbound_amount)。
+      注意这是托管货物的价值，不是公司的服务收入，也不等于运费。
+    relevant_columns:
+      - fact_outbound.outbound_amount
+    alias: [ 出库货值, 出库金额, 货值 ]
+
+  - name: DELIVERY_ONTIME_RATE
+    description: 妥投及时率，指在承诺时效内完成签收的出库单占比，
+      等于 SUM(is_ontime_delivery) / COUNT(*)，结果通常按百分比展示。
+      注意分子是标记列求和，不是对时长求平均；问「平均多久送到」应改用妥投时长。
+    relevant_columns:
+      - fact_outbound.is_ontime_delivery
+    alias: [ 妥投及时率, 准时率, 及时率, 妥投率 ]

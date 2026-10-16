@@ -1,0 +1,1365 @@
+tables:
+  - name: dim_warehouse
+    role: dim
+    description: 仓库维度表，描述第三方仓配服务商在全国运营的仓库及其属性，用于按仓、按大区、按仓型统计履约结果。
+    columns:
+      - name: warehouse_id
+        role: primary_key
+        description: 仓库唯一标识。
+        alias: [ 仓库ID, 仓编码 ]
+        sync: false
+
+      - name: warehouse_name
+        role: dimension
+        description: 仓库名称，如华北1仓、华东1仓。用户说「华北1仓」「1仓」时匹配本列。
+        alias: [ 仓库名称, 仓名, 哪个仓 ]
+        sync: true
+
+      - name: region_name
+        role: dimension
+        description: 仓库所属大区，取值为华北、华东、华南、华中、西南。用户问「华北」时按本列筛选。
+        alias: [ 大区, 区域, 片区 ]
+        sync: true
+
+      - name: city
+        role: dimension
+        description: 仓库所在城市，如北京、上海、广州、杭州、天津、深圳、武汉、成都。
+        alias: [ 城市, 所在城市, 开仓城市 ]
+        sync: true
+
+      - name: warehouse_type
+        role: dimension
+        description: 仓型，取值为中心仓、区域仓、前置仓、冷链仓。冷链仓只处理生鲜品类。
+        alias: [ 仓型, 仓库类型, 类型 ]
+        sync: true
+
+
+  - name: dim_cargo
+    role: dim
+    description: 货品维度表，描述托管在仓库中的货物属性，用于按品类、按品牌统计出库结构。
+    columns:
+      - name: cargo_id
+        role: primary_key
+        description: 货品唯一标识。
+        alias: [ 货品ID, 货物ID ]
+        sync: false
+
+      - name: cargo_name
+        role: dimension
+        description: 货品名称，如智能手机、变频空调、进口牛排。
+        alias: [ 货品名称, 商品名称, 货名 ]
+        sync: true
+
+      - name: cargo_category
+        role: dimension
+        description: 货品品类，取值为3C数码、家用电器、服装服饰、食品饮料、生鲜冷链、家居建材、美妆个护、母婴用品。
+        alias: [ 品类, 类别, 货类 ]
+        sync: true
+
+      - name: cargo_brand
+        role: dimension
+        description: 货品所属品牌，如华为、苹果、小米、美的、海尔、耐克、波司登、蒙牛、兰蔻、欧莱雅。
+        alias: [ 品牌, 牌子 ]
+        sync: true
+
+      - name: unit_price
+        role: dimension
+        description: 货品单价（元），是货品的固有属性，不是出库单的成交金额。统计出库货值应使用事实表的 outbound_amount。
+        alias: [ 单价, 货值单价 ]
+        sync: false
+
+      - name: unit_weight_kg
+        role: dimension
+        description: 货品单件重量（kg），影响运费计算，本身不作为统计指标。
+        alias: [ 单件重量, 件重 ]
+        sync: false
+
+
+  - name: dim_shipper
+    role: dim
+    description: 货主维度表，描述委托第三方仓配服务的发货客户（货主）及其等级，用于按客户统计出库量。
+    columns:
+      - name: shipper_id
+        role: primary_key
+        description: 货主唯一标识。
+        alias: [ 货主ID, 客户ID ]
+        sync: false
+
+      - name: shipper_name
+        role: dimension
+        description: 货主名称，如京东零售、小米科技、美的集团。
+        alias: [ 货主名称, 客户名称, 发货方 ]
+        sync: true
+
+      - name: shipper_level
+        role: dimension
+        description: 客户等级，取值为战略、核心、普通。等级越高出货量越大。
+        alias: [ 客户等级, 货主等级, 等级 ]
+        sync: true
+
+      - name: industry
+        role: dimension
+        description: 货主所属行业，如电商零售、3C制造、家电制造、服装纺织、食品饮料、生鲜供应、家居建材、美妆个护、母婴用品。
+        alias: [ 行业, 所属行业 ]
+        sync: true
+
+
+  - name: dim_carrier
+    role: dim
+    description: 承运商维度表，描述承担干线与末端派送的承运商及其时效产品，用于按承运商统计妥投质量。
+    columns:
+      - name: carrier_id
+        role: primary_key
+        description: 承运商唯一标识。
+        alias: [ 承运商ID, 快递ID ]
+        sync: false
+
+      - name: carrier_name
+        role: dimension
+        description: 承运商名称，如顺丰速运、京东物流、中通快运、圆通速递、德邦物流、邮政EMS。
+        alias: [ 承运商, 快递公司, 物流公司 ]
+        sync: true
+
+      - name: carrier_type
+        role: dimension
+        description: 承运商类型，取值为自营、加盟、专线、快运网络。
+        alias: [ 承运商类型, 合作模式 ]
+        sync: true
+
+      - name: service_level
+        role: dimension
+        description: 承运商主打时效产品，取值为次日达、隔日达、标准陆运、经济。时效越快运费越高。
+        alias: [ 时效产品, 时效, 服务等级 ]
+        sync: true
+
+
+  - name: dim_date
+    role: dim
+    description: 日期维度表，描述出库日期的年月季度属性，用于时间范围筛选与趋势分组。
+    columns:
+      - name: date_id
+        role: primary_key
+        description: 日期唯一标识，格式为 YYYYMMDD 的整数，与出库事实表的 date_id 关联。
+        alias: [ 日期ID ]
+        sync: false
+
+      - name: year
+        role: dimension
+        description: 年份，如2024、2025。
+        alias: [ 年, 年份 ]
+        sync: true
+
+      - name: quarter
+        role: dimension
+        description: 季度，取值为Q1、Q2、Q3、Q4。
+        alias: [ 季度 ]
+        sync: true
+
+      - name: month
+        role: dimension
+        description: 月份，取值1到12。
+        alias: [ 月, 月份 ]
+        sync: false
+
+      - name: day
+        role: dimension
+        description: 日，取值1到31。
+        alias: [ 日, 天 ]
+        sync: false
+
+
+  - name: fact_outbound
+    role: fact
+    description: 出库单事实表，记录每一笔出库单的货值、件数、运费与最终履约结果。
+      出库时写入，妥投后回填时效与妥投结果，是统计出库量、妥投率、时效的核心表。
+    columns:
+      - name: outbound_id
+        role: primary_key
+        description: 出库单唯一标识。统计出库单量时对出库单号去重计数，或直接 COUNT(*)。
+        alias: [ 出库单号, 出库单ID, 运单号, 单号 ]
+        sync: false
+
+      - name: shipper_id
+        role: foreign_key
+        description: 关联货主维度的外键。
+        alias: [ 货主ID, 客户ID ]
+        sync: false
+
+      - name: cargo_id
+        role: foreign_key
+        description: 关联货品维度的外键。
+        alias: [ 货品ID, 商品ID ]
+        sync: false
+
+      - name: date_id
+        role: foreign_key
+        description: 关联时间维度的外键，表示出库日期。
+        alias: [ 日期, 出库日期 ]
+        sync: false
+
+      - name: warehouse_id
+        role: foreign_key
+        description: 关联仓库维度的外键，表示出库仓。
+        alias: [ 仓库ID, 出库仓ID ]
+        sync: false
+
+      - name: carrier_id
+        role: foreign_key
+        description: 关联承运商维度的外键，表示承担本单派送的承运商。
+        alias: [ 承运商ID ]
+        sync: false
+
+      - name: outbound_quantity
+        role: measure
+        description: 该出库单的出库件数。统计「出库了多少件」时用本列求和。
+        alias: [ 出库件数, 件数, 出库数量 ]
+        sync: false
+
+      - name: outbound_amount
+        role: measure
+        description: 该出库单的出库货值（元），等于货品单价乘以件数。这是出库货物的价值，
+          不是运费，也不是服务收入；问「运费」「成本」时不要使用本列。
+        alias: [ 出库货值, 出库金额, 货值, 金额 ]
+        sync: false
+
+      - name: outbound_hours
+        role: measure
+        description: 出库时效，从货主下单到完成出库的小时数。数值越小越好。
+        alias: [ 出库时效, 出库时长, 备货时长 ]
+        sync: false
+
+      - name: is_ontime_outbound
+        role: measure
+        description: 是否按时出库标记，1 表示出库时效在 24 小时内，0 表示超时。
+          求出库及时率时用 SUM(本列) / COUNT(*)，不能直接求和当数量用。
+        alias: [ 是否按时出库, 出库及时标记 ]
+        sync: false
+
+      - name: delivery_hours
+        role: measure
+        description: 妥投时长，从出库到签收的小时数。未妥投的单据该值为 0，
+          求平均妥投时长时应先过滤 is_delivered = 1，否则 0 值会把均值拉低。
+        alias: [ 妥投时长, 派送时长, 送达时长 ]
+        sync: false
+
+      - name: is_delivered
+        role: measure
+        description: 是否妥投标记，1 表示已签收，0 表示丢件或拒收。
+          求妥投率时用 SUM(本列) / COUNT(*)。
+        alias: [ 是否妥投, 是否签收, 妥投标记 ]
+        sync: false
+
+      - name: is_ontime_delivery
+        role: measure
+        description: 是否准时妥投标记，1 表示在承运商承诺时效内完成签收，0 表示超时。
+          求妥投及时率（准时率）时用 SUM(本列) / COUNT(*)。
+        alias: [ 是否准时妥投, 准时妥投标记, 是否及时 ]
+        sync: false
+
+      - name: freight_amount
+        role: measure
+        description: 该出库单的运费（元），由首重费加续重费构成，时效越快的承运商费率越高。
+          这是本单发生的物流成本，与出库货值是两个完全不同的口径，不可混用。
+        alias: [ 运费, 物流费用, 配送费 ]
+        sync: false
+
+# ---------------------------------------------------------------------------
+# 以下 tables 由 scripts/gen_dw_large.py 追加，用于把 schema 从 6 表扩到 32 表。
+# 原 6 张表的定义保持原样不动，保证 56 道评测题的 gold SQL 不受影响。
+# ---------------------------------------------------------------------------
+
+  - name: ods_waybill_raw
+    role: fact
+    description: 贴源层原始运单表，由 TMS 业务库直接同步而来，未经任何清洗：含测试单、重复单与异常货值。本表仅用于数据溯源与问题排查，**不参与对外口径的业务统计**。若要做出库货值、出库单量等正式口径分析，请使用 fact_outbound（已清洗的事实明细）。
+    columns:
+      - name: raw_id
+        role: primary_key
+        description: 原始记录自增ID
+        alias: [ '原始ID' ]
+        sync: false
+
+      - name: waybill_no
+        role: dimension
+        description: 业务系统原始运单号
+        alias: [ '原始运单号', '运单号' ]
+        sync: false
+
+      - name: cargo_id
+        role: foreign_key
+        description: 货品标识
+        alias: [ '货品ID' ]
+        sync: false
+
+      - name: shipper_id
+        role: foreign_key
+        description: 货主标识
+        alias: [ '货主ID' ]
+        sync: false
+
+      - name: ship_date
+        role: dimension
+        description: 发货日期
+        alias: [ '发货日期' ]
+        sync: false
+
+      - name: amount_raw
+        role: measure
+        description: 未清洗的原始货值，含测试单与异常单，不可用于正式口径统计
+        alias: [ '原始货值' ]
+        sync: false
+
+      - name: weight_raw
+        role: measure
+        description: 未清洗的原始重量，含异常值，不可用于正式口径统计
+        alias: [ '原始重量' ]
+        sync: false
+
+      - name: is_test
+        role: dimension
+        description: 是否为测试单标记，1 表示测试单
+        alias: [ '测试标记' ]
+        sync: true
+
+      - name: load_time
+        role: dimension
+        description: 同步入库时间
+        alias: []
+        sync: false
+
+
+  - name: dws_outbound_daily
+    role: fact
+    description: 出库日汇总表，按「日期 + 仓库 + 品类」粒度预聚合每日的出库结果，用于加速固定看板的查询。**已聚合，无法下钻到单笔出库单、单个货主或单个货品**。注意覆盖边界：本表由离线任务回溯生成，当前仅汇总到 2025 年 9 月，2025 年 10 月之后的数据缺失；涉及 2025Q4 或全年合计的统计不能用本表，必须回到 fact_outbound。
+    columns:
+      - name: stat_date
+        role: primary_key
+        description: 统计日期，关联 dim_date
+        alias: [ '汇总日期' ]
+        sync: false
+
+      - name: warehouse_id
+        role: foreign_key
+        description: 出库仓ID
+        alias: [ '仓库ID' ]
+        sync: false
+
+      - name: category
+        role: dimension
+        description: 货品品类
+        alias: [ '品类', '类别' ]
+        sync: true
+
+      - name: daily_outbound_amount
+        role: measure
+        description: 当日出库货值合计，已聚合，不能下钻到单笔出库单
+        alias: [ '每日出库货值', '汇总货值' ]
+        sync: false
+
+      - name: daily_outbound_count
+        role: measure
+        description: 当日出库单量，已聚合
+        alias: [ '每日出库单量' ]
+        sync: false
+
+      - name: daily_quantity
+        role: measure
+        description: 当日出库件数合计，已聚合
+        alias: [ '每日出库件数' ]
+        sync: false
+
+
+  - name: fact_outbound_item
+    role: fact
+    description: 出库单明细表，一张出库单可能拆成多行（不同货品或分批出库），粒度比 fact_outbound 更细。**在明细表上直接 COUNT(*) 会把单量夸大**——统计出库单量应回到 fact_outbound，本表只用于分析明细行级别的结构。
+    columns:
+      - name: item_id
+        role: primary_key
+        description: 明细行自增ID
+        alias: [ '明细ID' ]
+        sync: false
+
+      - name: outbound_id
+        role: foreign_key
+        description: 所属出库单号
+        alias: [ '出库单号' ]
+        sync: false
+
+      - name: cargo_id
+        role: foreign_key
+        description: 货品标识
+        alias: [ '货品ID' ]
+        sync: false
+
+      - name: item_quantity
+        role: measure
+        description: 该明细行的出库件数
+        alias: [ '明细件数' ]
+        sync: false
+
+      - name: item_amount
+        role: measure
+        description: 该明细行的出库货值，同一出库单多行相加等于主表的出库货值
+        alias: [ '明细金额' ]
+        sync: false
+
+      - name: discount_rate
+        role: measure
+        description: 折扣率，0.9 表示九折，用于分析折扣结构，不是金额
+        alias: [ '折扣' ]
+        sync: false
+
+
+  - name: fact_delivery
+    role: fact
+    description: 派送事实表，记录出库单交给承运商之后的实际派送过程（派送员、派送次数、派送状态）。本表是**过程表**，一笔出库单可能产生多条派送记录（首次派送失败会再次派送）；统计派送单量前先确认是否需要去重。最终是否送到要看 fact_outbound 的妥投标记。
+    columns:
+      - name: delivery_id
+        role: primary_key
+        description: 派送记录自增ID
+        alias: [ '派送ID' ]
+        sync: false
+
+      - name: outbound_id
+        role: foreign_key
+        description: 出库单号
+        alias: [ '出库单号' ]
+        sync: false
+
+      - name: carrier_id
+        role: foreign_key
+        description: 承运商ID
+        alias: [ '承运商ID' ]
+        sync: false
+
+      - name: courier_name
+        role: dimension
+        description: 派送员姓名
+        alias: [ '派送员', '快递员' ]
+        sync: true
+
+      - name: dispatch_hours
+        role: measure
+        description: 出库到开始派送的小时数
+        alias: [ '派送响应时长' ]
+        sync: false
+
+      - name: delivery_status
+        role: dimension
+        description: 派送状态，取值为已签收、在途、拒收、派送失败
+        alias: [ '派送状态', '配送状态' ]
+        sync: true
+
+      - name: attempt_count
+        role: measure
+        description: 累计派送次数，大于 1 表示首次未成功
+        alias: [ '派送次数' ]
+        sync: false
+
+
+  - name: fact_signoff
+    role: fact
+    description: 签收事实表，记录出库单的最终签收结果（签收方式、是否本人签收、是否异常签收）。本表只包含**已签收**的单据，未签收（丢件、拒收）的单据不在此表，因此用本表统计妥投率会偏高——统计妥投率应使用 fact_outbound 的 is_delivered 标记。
+    columns:
+      - name: signoff_id
+        role: primary_key
+        description: 签收记录自增ID
+        alias: [ '签收ID' ]
+        sync: false
+
+      - name: outbound_id
+        role: foreign_key
+        description: 出库单号
+        alias: [ '出库单号' ]
+        sync: false
+
+      - name: signoff_date
+        role: foreign_key
+        description: 签收日期，关联 dim_date
+        alias: [ '签收日期' ]
+        sync: false
+
+      - name: signoff_type
+        role: dimension
+        description: 签收方式，取值为本人签收、他人代收、驿站代收、智能柜
+        alias: [ '签收方式' ]
+        sync: true
+
+      - name: is_self_sign
+        role: measure
+        description: 是否本人签收标记，1 表示本人签收
+        alias: [ '本人签收' ]
+        sync: false
+
+      - name: is_exception
+        role: measure
+        description: 是否异常签收标记，1 表示签收时就发现了破损或短少
+        alias: [ '异常签收' ]
+        sync: false
+
+
+  - name: fact_inbound
+    role: fact
+    description: 入库事实表，记录供应商送货到仓并完成验收的入库单。是「入库」这一动作的事实表，与出库方向的 fact_outbound 是**相反的两个业务动作**，统计「单量」时必须先分清方向。
+    columns:
+      - name: inbound_id
+        role: primary_key
+        description: 入库单自增ID
+        alias: [ '入库单号' ]
+        sync: false
+
+      - name: supplier_id
+        role: foreign_key
+        description: 供应商ID
+        alias: [ '供应商ID' ]
+        sync: false
+
+      - name: warehouse_id
+        role: foreign_key
+        description: 收货仓库ID
+        alias: [ '仓库ID' ]
+        sync: false
+
+      - name: cargo_id
+        role: foreign_key
+        description: 货品ID
+        alias: [ '货品ID' ]
+        sync: false
+
+      - name: date_id
+        role: foreign_key
+        description: 入库日期，关联 dim_date
+        alias: [ '入库日期' ]
+        sync: false
+
+      - name: inbound_quantity
+        role: measure
+        description: 入库件数
+        alias: [ '入库数量' ]
+        sync: false
+
+      - name: accept_hours
+        role: measure
+        description: 到货到验收完成的小时数，衡量收货效率
+        alias: [ '验收时长' ]
+        sync: false
+
+      - name: is_qualified
+        role: measure
+        description: 验收是否合格标记，1 表示合格
+        alias: [ '验收合格' ]
+        sync: false
+
+
+  - name: fact_inventory_daily
+    role: fact
+    description: 库存日快照表，按「货品 + 仓库 + 日期」记录每日闭仓时的在库件数与在库货值。**是快照不是流水**，同一批货在多个日期会重复出现，跨日期直接求和会重复计算；要看某一天的库存就限定单日，看周转则要用平均库存。
+    columns:
+      - name: snapshot_id
+        role: primary_key
+        description: 快照自增ID
+        alias: [ '快照ID' ]
+        sync: false
+
+      - name: cargo_id
+        role: foreign_key
+        description: 货品ID
+        alias: [ '货品ID' ]
+        sync: false
+
+      - name: warehouse_id
+        role: foreign_key
+        description: 仓库ID
+        alias: [ '仓库ID' ]
+        sync: false
+
+      - name: date_id
+        role: foreign_key
+        description: 库存日期，关联 dim_date
+        alias: [ '库存日期' ]
+        sync: false
+
+      - name: stock_quantity
+        role: measure
+        description: 当日闭仓在库件数，跨日期求和会重复计算
+        alias: [ '在库件数', '库存数量' ]
+        sync: false
+
+      - name: stock_amount
+        role: measure
+        description: 当日闭仓在库货值，跨日期求和会重复计算
+        alias: [ '在库货值', '库存金额' ]
+        sync: false
+
+      - name: stock_days
+        role: measure
+        description: 库龄天数，衡量货物在仓存放了多久
+        alias: [ '库龄' ]
+        sync: false
+
+
+  - name: fact_picking
+    role: fact
+    description: 拣货作业事实表，记录仓内操作员按出库单拣货的作业量与差错情况。这是**仓内作业**数据，与出库单本身是一对多的关系（一张出库单可能多人分捡），统计出库单量不要使用本表。
+    columns:
+      - name: picking_id
+        role: primary_key
+        description: 拣货记录自增ID
+        alias: [ '拣货ID' ]
+        sync: false
+
+      - name: outbound_id
+        role: foreign_key
+        description: 出库单号
+        alias: [ '出库单号' ]
+        sync: false
+
+      - name: staff_id
+        role: foreign_key
+        description: 拣货员ID
+        alias: [ '员工ID' ]
+        sync: false
+
+      - name: shift_id
+        role: foreign_key
+        description: 班次ID
+        alias: [ '班次ID' ]
+        sync: false
+
+      - name: pick_lines
+        role: measure
+        description: 拣货行数
+        alias: [ '拣货行数' ]
+        sync: false
+
+      - name: pick_minutes
+        role: measure
+        description: 拣货耗时（分钟）
+        alias: [ '拣货时长' ]
+        sync: false
+
+      - name: error_lines
+        role: measure
+        description: 拣货差错行数，衡量拣货质量
+        alias: [ '差错行数' ]
+        sync: false
+
+
+  - name: fact_equipment_op
+    role: fact
+    description: 仓储装备作业事实表，记录叉车、AGV、分拣线等装备每日的运行与能耗。这是**装备运行**数据，与出库业务没有单据级关联，不能用来统计出库量或运费。
+    columns:
+      - name: op_id
+        role: primary_key
+        description: 作业记录自增ID
+        alias: [ '作业ID' ]
+        sync: false
+
+      - name: equipment_id
+        role: foreign_key
+        description: 装备ID
+        alias: [ '设备ID' ]
+        sync: false
+
+      - name: warehouse_id
+        role: foreign_key
+        description: 所在仓库ID
+        alias: [ '仓库ID' ]
+        sync: false
+
+      - name: date_id
+        role: foreign_key
+        description: 作业日期，关联 dim_date
+        alias: [ '作业日期' ]
+        sync: false
+
+      - name: run_hours
+        role: measure
+        description: 当日运行时长（小时）
+        alias: [ '运行时长' ]
+        sync: false
+
+      - name: energy_kwh
+        role: measure
+        description: 当日能耗（度）
+        alias: [ '能耗', '用电量' ]
+        sync: false
+
+      - name: fault_count
+        role: measure
+        description: 当日故障次数
+        alias: [ '故障次数' ]
+        sync: false
+
+
+  - name: fact_claim
+    role: fact
+    description: 异常理赔事实表，记录出库单发生破损、丢失、延误等异常后的理赔申请与处理结果。这是**负向指标**表：常规的出库货值、出库单量统计不扣减理赔，也不应 JOIN 本表；只有在问题明确提到「理赔」「赔付」「异常件」时才使用。
+    columns:
+      - name: claim_id
+        role: primary_key
+        description: 理赔单号
+        alias: [ '理赔单号', '异常单号' ]
+        sync: false
+
+      - name: outbound_id
+        role: foreign_key
+        description: 关联出库单号
+        alias: [ '出库单号' ]
+        sync: false
+
+      - name: claim_type_id
+        role: foreign_key
+        description: 异常类型ID
+        alias: [ '异常类型ID' ]
+        sync: false
+
+      - name: date_id
+        role: foreign_key
+        description: 报案日期，关联 dim_date
+        alias: [ '报案日期' ]
+        sync: false
+
+      - name: claim_amount
+        role: measure
+        description: 理赔金额，负向指标，常规出库统计不扣减
+        alias: [ '理赔额', '赔付金额' ]
+        sync: false
+
+      - name: claim_status
+        role: dimension
+        description: 处理状态，取值为已赔付、审核中、已驳回
+        alias: [ '理赔状态' ]
+        sync: true
+
+      - name: resolve_hours
+        role: measure
+        description: 报案到结案的小时数
+        alias: [ '理赔处理时长' ]
+        sync: false
+
+
+  - name: fact_return
+    role: fact
+    description: 退货入库事实表，记录被拒收或退回的货物回到仓库的入库记录。这是**逆向物流**数据，与正向出库方向相反；统计出库量时绝不能把退货算进去。
+    columns:
+      - name: return_id
+        role: primary_key
+        description: 退货入库自增ID
+        alias: [ '退货ID' ]
+        sync: false
+
+      - name: outbound_id
+        role: foreign_key
+        description: 原出库单号
+        alias: [ '出库单号' ]
+        sync: false
+
+      - name: warehouse_id
+        role: foreign_key
+        description: 退回仓库ID
+        alias: [ '仓库ID' ]
+        sync: false
+
+      - name: date_id
+        role: foreign_key
+        description: 退回日期，关联 dim_date
+        alias: [ '退货日期' ]
+        sync: false
+
+      - name: return_quantity
+        role: measure
+        description: 退回件数，逆向数据，不能计入出库件数
+        alias: [ '退货件数' ]
+        sync: false
+
+      - name: return_reason
+        role: dimension
+        description: 退货原因，如拒收、地址错误、客户取消、质量问题
+        alias: [ '退货原因' ]
+        sync: true
+
+      - name: is_reshelved
+        role: measure
+        description: 是否已二次上架标记，1 表示已重新上架可售
+        alias: [ '二次上架' ]
+        sync: false
+
+
+  - name: fact_transport
+    role: fact
+    description: 干线运输事实表，按「线路 + 车次 + 日期」记录仓库之间的干线发运情况。这是**仓间调拨**层面的数据，与面向客户的出库单不在同一粒度，统计出库单量或妥投率不使用本表。
+    columns:
+      - name: transport_id
+        role: primary_key
+        description: 车次自增ID
+        alias: [ '车次ID' ]
+        sync: false
+
+      - name: line_id
+        role: foreign_key
+        description: 干线线路ID
+        alias: [ '线路ID' ]
+        sync: false
+
+      - name: date_id
+        role: foreign_key
+        description: 发运日期，关联 dim_date
+        alias: [ '发运日期' ]
+        sync: false
+
+      - name: vehicle_no
+        role: dimension
+        description: 车牌号
+        alias: [ '车牌' ]
+        sync: false
+
+      - name: shipment_count
+        role: measure
+        description: 本车搭载的出库单量，是干线口径不是客户口径
+        alias: [ '发运单量' ]
+        sync: false
+
+      - name: volume_m3
+        role: measure
+        description: 发运体积（立方米）
+        alias: [ '发运体积' ]
+        sync: false
+
+      - name: is_ontime
+        role: measure
+        description: 是否准点到达标记，1 表示准点
+        alias: [ '干线准点' ]
+        sync: false
+
+
+  - name: fact_freight_settle
+    role: fact
+    description: 运费结算事实表，记录与承运商按单结算的运费结果，含应付、增值服务费与实付三个金额。**金额口径说明**：fact_outbound.freight_amount 是对客户应收的运费，本表的 payable_freight 是对承运商应付的成本，两者是收入与成本的区别，绝不可混用；paid_freight 是扣除争议与理赔后的实付金额，通常小于 payable_freight。
+    columns:
+      - name: settle_id
+        role: primary_key
+        description: 结算自增ID
+        alias: [ '结算ID' ]
+        sync: false
+
+      - name: outbound_id
+        role: foreign_key
+        description: 出库单号
+        alias: [ '出库单号' ]
+        sync: false
+
+      - name: carrier_id
+        role: foreign_key
+        description: 承运商ID
+        alias: [ '承运商ID' ]
+        sync: false
+
+      - name: payable_freight
+        role: measure
+        description: 应付运费（对承运商的成本），与出库单上的应收运费是相反口径
+        alias: [ '应付运费' ]
+        sync: false
+
+      - name: extra_fee
+        role: measure
+        description: 增值服务费，含上楼费、保价费、超区派送费
+        alias: [ '增值服务费', '附加费' ]
+        sync: false
+
+      - name: paid_freight
+        role: measure
+        description: 实付运费，扣除争议与理赔后实际支付的金额，通常小于应付运费
+        alias: [ '实付运费' ]
+        sync: false
+
+      - name: settle_status
+        role: dimension
+        description: 结算状态，取值为已结算、对账中、有争议
+        alias: [ '结算状态' ]
+        sync: true
+
+      - name: date_id
+        role: foreign_key
+        description: 结算日期，关联 dim_date
+        alias: [ '结算日期' ]
+        sync: false
+
+
+  - name: fact_warehouse_cost
+    role: fact
+    description: 仓成本事实表，按「仓库 + 月份」记录仓储运营发生的各项成本。这是**成本**数据，与出库货值（托管货物价值）是完全不同的两个口径，不可混用；问「出库货值」「出库单量」时不要使用本表。
+    columns:
+      - name: cost_id
+        role: primary_key
+        description: 成本记录自增ID
+        alias: [ '成本ID' ]
+        sync: false
+
+      - name: warehouse_id
+        role: foreign_key
+        description: 仓库ID
+        alias: [ '仓库ID' ]
+        sync: false
+
+      - name: date_id
+        role: foreign_key
+        description: 成本所属月份，关联 dim_date
+        alias: [ '成本月份' ]
+        sync: false
+
+      - name: storage_fee
+        role: measure
+        description: 仓储费（库租），按月发生
+        alias: [ '仓储费', '库租' ]
+        sync: false
+
+      - name: operation_fee
+        role: measure
+        description: 操作费，含出入库作业产生的费用
+        alias: [ '操作费' ]
+        sync: false
+
+      - name: labor_cost
+        role: measure
+        description: 人力成本
+        alias: [ '人工成本' ]
+        sync: false
+
+      - name: energy_cost
+        role: measure
+        description: 能耗成本，含制冷与照明用电
+        alias: [ '能耗成本' ]
+        sync: false
+
+
+  - name: dim_consignee
+    role: dim
+    description: 收货人维度表，描述包裹的最终收件方，用于分析末端派送的收件特征。
+    columns:
+      - name: consignee_id
+        role: primary_key
+        description: 收货人ID
+        alias: [ '收货人ID' ]
+        sync: false
+
+      - name: consignee_name
+        role: dimension
+        description: 收货人姓名
+        alias: [ '收货人', '收件人' ]
+        sync: true
+
+      - name: phone_masked
+        role: dimension
+        description: 脱敏后的手机号
+        alias: [ '手机号' ]
+        sync: false
+
+      - name: dest_id
+        role: foreign_key
+        description: 目的地区域ID
+        alias: [ '目的地ID' ]
+        sync: false
+
+      - name: consignee_type
+        role: dimension
+        description: 收货人类型，取值为个人、企业、驿站
+        alias: [ '收货人类型' ]
+        sync: true
+
+
+  - name: dim_destination
+    role: dim
+    description: 目的地区域维度表，描述包裹送达方向所在的省市区，以及是否属于偏远地区。注意与 dim_warehouse 的区别：本表描述**货送到哪里**，dim_warehouse 描述**货从哪个仓发出**。
+    columns:
+      - name: dest_id
+        role: primary_key
+        description: 目的地区域ID
+        alias: [ '目的地ID' ]
+        sync: false
+
+      - name: province
+        role: dimension
+        description: 收货省份
+        alias: [ '省份', '目的省份' ]
+        sync: true
+
+      - name: region_name
+        role: dimension
+        description: 收货所在大区
+        alias: [ '目的大区', '大区' ]
+        sync: true
+
+      - name: city
+        role: dimension
+        description: 收货城市
+        alias: [ '目的城市', '城市' ]
+        sync: true
+
+      - name: is_remote
+        role: dimension
+        description: 是否偏远地区标记，1 表示偏远，偏远地区时效更长
+        alias: [ '偏远地区' ]
+        sync: true
+
+
+  - name: dim_transport_line
+    role: dim
+    description: 干线线路维度表，描述仓库之间的固定运输线路及其里程与承诺时效。
+    columns:
+      - name: line_id
+        role: primary_key
+        description: 干线线路ID
+        alias: [ '线路ID' ]
+        sync: false
+
+      - name: origin_warehouse_id
+        role: foreign_key
+        description: 起点仓ID
+        alias: [ '起点仓' ]
+        sync: false
+
+      - name: dest_city
+        role: dimension
+        description: 终点城市
+        alias: [ '终点', '到达城市' ]
+        sync: true
+
+      - name: distance_km
+        role: measure
+        description: 线路里程（公里）
+        alias: [ '里程', '距离' ]
+        sync: false
+
+      - name: promise_hours
+        role: measure
+        description: 该线路的承诺时效（小时）
+        alias: [ '线路时效' ]
+        sync: false
+
+
+  - name: dim_service_level
+    role: dim
+    description: 时效产品维度表，描述公司对外承诺的时效档次及其对应小时数。注意与 dim_carrier.service_level 的区别：本表是可售卖的**产品档位**，承运商表上的 service_level 只是该承运商的主打档位，统计应按时效产品走本表。
+    columns:
+      - name: level_id
+        role: primary_key
+        description: 时效产品ID
+        alias: [ '时效ID' ]
+        sync: false
+
+      - name: level_name
+        role: dimension
+        description: 时效产品名称，取值为次日达、隔日达、标准陆运、经济
+        alias: [ '时效产品', '时效档位' ]
+        sync: true
+
+      - name: promise_hours
+        role: measure
+        description: 该时效产品的承诺小时数
+        alias: [ '承诺时效' ]
+        sync: false
+
+      - name: is_cold_chain
+        role: dimension
+        description: 是否冷链产品标记，1 表示冷链
+        alias: [ '冷链' ]
+        sync: true
+
+
+  - name: dim_claim_type
+    role: dim
+    description: 异常类型维度表，描述理赔与异常件的分类及其赔付规则。
+    columns:
+      - name: claim_type_id
+        role: primary_key
+        description: 异常类型ID
+        alias: [ '异常类型ID' ]
+        sync: false
+
+      - name: claim_type_name
+        role: dimension
+        description: 异常类型名称，取值为破损、丢失、延误、错发、短少
+        alias: [ '异常类型', '理赔类型' ]
+        sync: true
+
+      - name: compensate_rule
+        role: dimension
+        description: 该类型的赔付规则说明
+        alias: [ '赔付规则' ]
+        sync: false
+
+
+  - name: dim_cargo_sku
+    role: dim
+    description: 货品规格（SKU）维度表，描述同一个货品下的不同规格包装变体。**粒度是货品之下的规格**，比 dim_cargo 更细：统计品类或品牌口径时不要 JOIN 本表，否则会把同一货品重复计数。
+    columns:
+      - name: sku_id
+        role: primary_key
+        description: SKU唯一标识
+        alias: [ 'SKU', '规格ID' ]
+        sync: false
+
+      - name: cargo_id
+        role: foreign_key
+        description: 所属货品ID
+        alias: [ '货品ID' ]
+        sync: false
+
+      - name: sku_name
+        role: dimension
+        description: SKU名称
+        alias: [ 'SKU名称' ]
+        sync: true
+
+      - name: spec
+        role: dimension
+        description: 规格描述，如标准装、家庭装、大容量
+        alias: [ '规格', '型号' ]
+        sync: true
+
+      - name: package_unit
+        role: dimension
+        description: 包装单位，取值为箱、件、托、袋
+        alias: [ '包装单位' ]
+        sync: true
+
+
+  - name: dim_cargo_brand
+    role: dim
+    description: 品牌维度表，描述货品品牌的产地与档次。与 dim_cargo 上的 cargo_brand 字段是同一语义的**两个存放位置**：按品牌分组统计用哪边都行，但不要两边都 JOIN，会导致品牌重复。
+    columns:
+      - name: brand_id
+        role: primary_key
+        description: 品牌ID
+        alias: [ '品牌ID' ]
+        sync: false
+
+      - name: brand_name
+        role: dimension
+        description: 品牌名称，如华为、美的、耐克
+        alias: [ '品牌', '牌子' ]
+        sync: true
+
+      - name: origin
+        role: dimension
+        description: 品牌所属国家或地区
+        alias: [ '品牌产地', '国别' ]
+        sync: true
+
+      - name: tier
+        role: dimension
+        description: 品牌档次，取值为高端、大众
+        alias: [ '档次' ]
+        sync: true
+
+
+  - name: dim_staff
+    role: dim
+    description: 仓操作员维度表，描述仓库内作业人员的岗位与所属仓库，用于分析人效。
+    columns:
+      - name: staff_id
+        role: primary_key
+        description: 员工ID
+        alias: [ '员工ID' ]
+        sync: false
+
+      - name: staff_name
+        role: dimension
+        description: 员工姓名
+        alias: [ '员工', '操作员' ]
+        sync: true
+
+      - name: position
+        role: dimension
+        description: 岗位，取值为拣货员、叉车工、复核员、打包员
+        alias: [ '岗位', '职位' ]
+        sync: true
+
+      - name: warehouse_id
+        role: foreign_key
+        description: 所属仓库ID
+        alias: [ '仓库ID' ]
+        sync: false
+
+      - name: hire_date
+        role: foreign_key
+        description: 入职日期，关联 dim_date
+        alias: [ '入职日期' ]
+        sync: false
+
+
+  - name: dim_shift
+    role: dim
+    description: 班次维度表，描述仓库的作业班次及其起止时段。
+    columns:
+      - name: shift_id
+        role: primary_key
+        description: 班次ID
+        alias: [ '班次ID' ]
+        sync: false
+
+      - name: shift_name
+        role: dimension
+        description: 班次名称，取值为早班、晚班、夜班
+        alias: [ '班次' ]
+        sync: true
+
+      - name: start_hour
+        role: dimension
+        description: 班次开始的小时
+        alias: [ '开始时间' ]
+        sync: false
+
+      - name: end_hour
+        role: dimension
+        description: 班次结束的小时
+        alias: [ '结束时间' ]
+        sync: false
+
+
+  - name: dim_zone
+    role: dim
+    description: 库区维度表，描述仓库内部的物理分区及其温层与用途。
+    columns:
+      - name: zone_id
+        role: primary_key
+        description: 库区ID
+        alias: [ '库区ID' ]
+        sync: false
+
+      - name: zone_name
+        role: dimension
+        description: 库区名称，如A区、B区、冷藏区、次品区
+        alias: [ '库区' ]
+        sync: true
+
+      - name: temperature_zone
+        role: dimension
+        description: 温层，取值为常温、冷藏、冷冻
+        alias: [ '温层', '温度区' ]
+        sync: true
+
+      - name: usage_type
+        role: dimension
+        description: 库区用途，取值为存储区、拣货区、复核区、退货区
+        alias: [ '库区用途' ]
+        sync: true
+
+
+  - name: dim_equipment
+    role: dim
+    description: 仓储装备维度表，描述仓内叉车、AGV、分拣线等装备的型号与额定参数。这是**装备资产**数据，与出库单据没有直接关联，不能用来统计出库业务量。
+    columns:
+      - name: equipment_id
+        role: primary_key
+        description: 装备ID
+        alias: [ '设备ID' ]
+        sync: false
+
+      - name: equipment_name
+        role: dimension
+        description: 装备名称，如内燃叉车、电动叉车、AGV、分拣线、缠绕机、打包台
+        alias: [ '装备名称', '设备名称' ]
+        sync: true
+
+      - name: equipment_type
+        role: dimension
+        description: 装备类型，取值为搬运设备、分拣设备、包装设备、存储设备
+        alias: [ '装备类型', '设备类型' ]
+        sync: true
+
+      - name: warehouse_id
+        role: foreign_key
+        description: 所在仓库ID
+        alias: [ '仓库ID' ]
+        sync: false
+
+      - name: rated_load
+        role: measure
+        description: 额定载荷（吨），装备固有参数不是业务指标
+        alias: [ '额定载荷', '载荷' ]
+        sync: false
+
+
+  - name: dim_supplier
+    role: dim
+    description: 供应商维度表，描述向仓库送货的供应商及其合作等级，用于分析入库来源。
+    columns:
+      - name: supplier_id
+        role: primary_key
+        description: 供应商ID
+        alias: [ '供应商ID' ]
+        sync: false
+
+      - name: supplier_name
+        role: dimension
+        description: 供应商名称
+        alias: [ '供应商' ]
+        sync: true
+
+      - name: coop_level
+        role: dimension
+        description: 合作等级，取值为战略、核心、普通
+        alias: [ '合作等级' ]
+        sync: true
+
+      - name: city
+        role: dimension
+        description: 供应商所在城市
+        alias: [ '供应商城市' ]
+        sync: true
+
+
+metrics:
+  - name: OUTBOUND_COUNT
+    description: 出库单量，指完成的出库单笔数，等价于对出库单号去重计数 COUNT(outbound_id)。
+      在 fact_outbound 上直接 COUNT(*) 即为本指标。
+    relevant_columns:
+      - fact_outbound.outbound_id
+    alias: [ 出库单量, 出库量, 出库笔数, 单量 ]
+
+  - name: OUTBOUND_AMOUNT
+    description: 出库货值，指所有出库单的出库金额总和，等于 SUM(outbound_amount)。
+      注意这是托管货物的价值，不是公司的服务收入，也不等于运费。
+    relevant_columns:
+      - fact_outbound.outbound_amount
+    alias: [ 出库货值, 出库金额, 货值 ]
+
+  - name: DELIVERY_ONTIME_RATE
+    description: 妥投及时率，指在承诺时效内完成签收的出库单占比，
+      等于 SUM(is_ontime_delivery) / COUNT(*)，结果通常按百分比展示。
+      注意分子是标记列求和，不是对时长求平均；问「平均多久送到」应改用妥投时长。
+    relevant_columns:
+      - fact_outbound.is_ontime_delivery
+    alias: [ 妥投及时率, 准时率, 及时率, 妥投率 ]
+
+  - name: INBOUND_COUNT
+    description: 入库单量，指供应商送货入库的单据笔数，方向是「货进仓」。与出库单量是相反的两个业务动作，问「出库了多少单」时不能用本指标。
+    relevant_columns:
+      - fact_inbound.inbound_id
+    alias: [ 入库单量, 入库量, 收货单量 ]
+
+  - name: SIGN_RATE
+    description: 妥投率（签收率），指最终成功签收的出库单占比，等于 SUM(is_delivered) / COUNT(*)。注意它只回答「送到没有」，不回答「按时送到没有」——问「及时率」「准时率」应改用 DELIVERY_ONTIME_RATE。
+    relevant_columns:
+      - fact_outbound.is_delivered
+    alias: [ 妥投率, 签收率, 送达率 ]
+
+  - name: CLAIM_AMOUNT
+    description: 理赔金额，指因破损、丢失、延误等异常而实际赔付的金额总和，是负向指标。只有在问题明确提到「理赔」「赔付」时才使用；常规的出库货值、出库单量统计不扣减理赔，也不应 JOIN 理赔表。
+    relevant_columns:
+      - fact_claim.claim_amount
+    alias: [ 理赔额, 赔付金额, 理赔金额 ]
+
+  - name: PAID_FREIGHT
+    description: 实付运费，指与承运商结算后扣除争议与理赔实际支付的运费，通常小于应付运费。与出库单上的 freight_amount（对客户应收运费）是成本与收入两个方向，绝不可混用；泛泛地问「运费多少」默认指出库单上的应收运费。
+    relevant_columns:
+      - fact_freight_settle.paid_freight
+    alias: [ 实付运费, 结算运费 ]
+
+  - name: PICKING_EFFICIENCY
+    description: 拣货效率，指单位时间完成的拣货行数，等于拣货行数除以拣货耗时（换算为小时）。这是仓内作业效率指标，与出库业务量无关；问「出库了多少」时不使用。
+    relevant_columns:
+      - fact_picking.pick_lines
+      - fact_picking.pick_minutes
+    alias: [ 拣货效率, 人效, 拣货人效 ]
