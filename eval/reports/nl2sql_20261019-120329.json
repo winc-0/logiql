@@ -1,0 +1,46 @@
+{
+  "stamp": "20261019-120329",
+  "tag": "",
+  "meta_config": "",
+  "dataset": "nl2sql_gold.jsonl",
+  "n_questions": 2,
+  "schema": {
+    "tables": 32,
+    "columns": 163,
+    "metrics": 7,
+    "schema_chars": 21296,
+    "schema_tokens_est": 11155
+  },
+  "strategies": {
+    "llm_only": [
+      {
+        "sql": "SELECT SUM(order_amount) AS 总销售额 FROM fact_order",
+        "elapsed_s": 5.99,
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 0,
+        "reason": "SQL 执行失败",
+        "error_detail": "执行预测SQL失败：'dict' object has no attribute 'dw_mysql_repository'",
+        "qid": "a01",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT COUNT(*) AS 订单数 FROM fact_order",
+        "elapsed_s": 5.97,
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 0,
+        "reason": "SQL 执行失败",
+        "error_detail": "执行预测SQL失败：'dict' object has no attribute 'dw_mysql_repository'",
+        "qid": "a02",
+        "level": "A",
+        "kind": "aggregate"
+      }
+    ]
+  },
+  "timings": {
+    "llm_only": 5.995531399967149
+  },
+  "source_json": "eval/reports/nl2sql_20261019-120329.json"
+}

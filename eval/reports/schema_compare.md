@@ -1,5 +1,8 @@
 # schema 规模交叉对比报告
 
+- 小 schema 来源：`eval/reports/nl2sql_20261021-191836.json`（tag: 6表小schema）
+- 大 schema 来源：`eval/reports/nl2sql_20261021-190409.json`（tag: 32表大schema）
+
 **实验设计**：题目完全相同（同一份标注集），只改变元数据规模；gold SQL 在两种条件下均已逐题验证可执行且结果非空，因此「schema 规模」是唯一的自变量。
 
 ## 1. 两种条件的规模

@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import subprocess
 import sys
 import time
 from contextlib import asynccontextmanager
@@ -206,6 +207,28 @@ async def run_case(
     }
 
 
+def _git_commit() -> str:
+    """
+    取当前代码版本，写进结果 JSON 与报告头部。
+
+    报告要能自证「这份数字是哪次跑、跑的是哪版代码」——
+    否则重跑之后数字变了，没人说得清是代码改了还是模型漂了。
+    """
+    try:
+        out = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            cwd=boot.PROJECT_ROOT,
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return ""
+    if out.returncode != 0:
+        return ""
+    return out.stdout.strip()
+
+
 async def evaluate(
     strategies: list[str],
     dataset: list[dict],
@@ -213,6 +236,7 @@ async def evaluate(
     tag: str = "",
     meta_config: Path | None = None,
     concurrency: int = 1,
+    dataset_path: Path | None = None,
 ) -> dict:
     embedding_manager.init()
     qdrant_client_manager.init()
@@ -318,11 +342,15 @@ async def evaluate(
         "stamp": stamp,
         "tag": tag,
         "meta_config": str(meta_config) if meta_config else "",
-        "dataset": str(DEFAULT_DATASET.name),
+        "dataset": (dataset_path.name if dataset_path else DEFAULT_DATASET.name),
         "n_questions": len(dataset),
         "schema": schema,
         "strategies": {k: v for k, v in results.items()},
         "timings": timings,
+        "concurrency": concurrency,
+        "git_commit": _git_commit(),
+        "command": "python " + " ".join(sys.argv),
+        "source_json": f"eval/reports/nl2sql_{stamp}.json",
     }
     outfile = outdir / f"nl2sql_{stamp}.json"
     outfile.write_text(
@@ -360,6 +388,20 @@ def build_report(payload: dict) -> str:
     add(f"- 标注集：{payload['dataset']}，共 {n} 题，按 A–F 六档难度分组")
     add("- 主指标：**Execution Accuracy（执行准确率）**")
     add(f"- 生成时间：{payload['stamp']}")
+
+    # 复现信息：报告要能自证是哪一次运行、哪一版代码、用什么命令产出的。
+    # 缺了这几行，重跑后数字变了就没人说得清是代码改了还是模型漂了。
+    source_json = payload.get("source_json") or ""
+    if source_json:
+        add(f"- 原始结果：`{source_json}`")
+    if payload.get("git_commit"):
+        add(f"- 代码版本：`{payload['git_commit']}`")
+    if payload.get("command"):
+        add(f"- 生成命令：`{payload['command']}`")
+    if payload.get("concurrency") is not None:
+        add(f"- 并发度：{payload['concurrency']}（跨轮对比必须一致）")
+    if not source_json and not payload.get("git_commit"):
+        add("- 原始结果：本报告由早期版本产出，未记录来源 JSON（见 `eval/reports/archive/`）")
     add("")
 
     # ---- 逐层累加对比表
@@ -611,6 +653,7 @@ def main() -> int:
             tag=args.tag,
             meta_config=args.meta_config,
             concurrency=args.concurrency,
+            dataset_path=args.dataset,
         )
     )
 

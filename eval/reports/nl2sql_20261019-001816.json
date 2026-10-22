@@ -1,0 +1,91 @@
+{
+  "stamp": "20261019-001816",
+  "tag": "冒烟-32表",
+  "meta_config": "conf\\meta_config_large.yaml",
+  "dataset": "nl2sql_gold.jsonl",
+  "n_questions": 3,
+  "schema": {
+    "tables": 32,
+    "columns": 163,
+    "metrics": 7,
+    "schema_chars": 21296,
+    "schema_tokens_est": 11155
+  },
+  "strategies": {
+    "llm_only": [
+      {
+        "sql": "SELECT SUM(order_amount) AS 总销售额 FROM fact_order",
+        "elapsed_s": 8.08,
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a01",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT COUNT(*) AS 订单数 FROM fact_order",
+        "elapsed_s": 4.77,
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a02",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT SUM(order_quantity) AS total_quantity FROM fact_order",
+        "elapsed_s": 5.83,
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a03",
+        "level": "A",
+        "kind": "aggregate"
+      }
+    ],
+    "llm_filter": [
+      {
+        "sql": "SELECT SUM(order_amount) AS total_sales FROM fact_order",
+        "elapsed_s": 6.39,
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a01",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT COUNT(*) AS ORDER_COUNT FROM fact_order",
+        "elapsed_s": 6.85,
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a02",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT SUM(order_quantity) AS total_quantity FROM fact_order",
+        "elapsed_s": 6.72,
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a03",
+        "level": "A",
+        "kind": "aggregate"
+      }
+    ]
+  },
+  "timings": {
+    "llm_only": 18.67496149998624,
+    "llm_filter": 19.959884199983208
+  },
+  "source_json": "eval/reports/nl2sql_20261019-001816.json"
+}

@@ -1,0 +1,33 @@
+{
+  "stamp": "20261018-205424",
+  "dataset": "nl2sql_gold.jsonl",
+  "n_questions": 2,
+  "strategies": {
+    "full": [
+      {
+        "sql": "SELECT SUM(order_amount) AS total_sales FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a01",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT COUNT(*) AS order_count FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a02",
+        "level": "A",
+        "kind": "aggregate"
+      }
+    ]
+  },
+  "timings": {
+    "full": 13.545389300008537
+  },
+  "source_json": "eval/reports/nl2sql_20261018-205424.json"
+}

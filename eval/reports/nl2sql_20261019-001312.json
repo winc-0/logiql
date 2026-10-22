@@ -1,0 +1,44 @@
+{
+  "stamp": "20261019-001312",
+  "tag": "冒烟-5表",
+  "meta_config": "conf\\meta_config.yaml",
+  "dataset": "nl2sql_gold.jsonl",
+  "n_questions": 2,
+  "schema": {
+    "tables": 5,
+    "columns": 24,
+    "metrics": 2,
+    "schema_chars": 3085,
+    "schema_tokens_est": 1567
+  },
+  "strategies": {
+    "llm_only": [
+      {
+        "sql": "SELECT SUM(order_amount) AS GMV FROM fact_order",
+        "elapsed_s": 5.45,
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a01",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT COUNT(*) AS order_count FROM fact_order",
+        "elapsed_s": 4.02,
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a02",
+        "level": "A",
+        "kind": "aggregate"
+      }
+    ]
+  },
+  "timings": {
+    "llm_only": 9.470629200019175
+  },
+  "source_json": "eval/reports/nl2sql_20261019-001312.json"
+}

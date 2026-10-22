@@ -1,0 +1,121 @@
+{
+  "stamp": "20261019-120404",
+  "tag": "",
+  "meta_config": "",
+  "dataset": "nl2sql_gold.jsonl",
+  "n_questions": 4,
+  "schema": {
+    "tables": 32,
+    "columns": 163,
+    "metrics": 7,
+    "schema_chars": 21296,
+    "schema_tokens_est": 11155
+  },
+  "strategies": {
+    "llm_only": [
+      {
+        "sql": "SELECT SUM(order_amount) AS 总销售额 FROM fact_order",
+        "elapsed_s": 6.28,
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "error_detail": "",
+        "qid": "a01",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT COUNT(*) AS 订单数 FROM fact_order",
+        "elapsed_s": 6.88,
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "error_detail": "",
+        "qid": "a02",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT SUM(order_quantity) AS total_quantity FROM fact_order",
+        "elapsed_s": 5.76,
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "error_detail": "",
+        "qid": "a03",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT AVG(order_amount) AS AOV FROM fact_order",
+        "elapsed_s": 6.55,
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "error_detail": "",
+        "qid": "a04",
+        "level": "A",
+        "kind": "aggregate"
+      }
+    ],
+    "full": [
+      {
+        "sql": "SELECT SUM(order_amount) AS total_sales FROM fact_order",
+        "elapsed_s": 8.65,
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "error_detail": "",
+        "qid": "a01",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT COUNT(*) AS ORDER_COUNT FROM fact_order",
+        "elapsed_s": 9.07,
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "error_detail": "",
+        "qid": "a02",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT SUM(daily_quantity) AS total_quantity FROM dws_order_daily",
+        "elapsed_s": 9.13,
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "error_detail": "",
+        "qid": "a03",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT AVG(order_amount) AS AOV FROM fact_order",
+        "elapsed_s": 9.3,
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "error_detail": "",
+        "qid": "a04",
+        "level": "A",
+        "kind": "aggregate"
+      }
+    ]
+  },
+  "timings": {
+    "llm_only": 6.883345299982466,
+    "full": 9.303483700030483
+  },
+  "source_json": "eval/reports/nl2sql_20261019-120404.json"
+}
