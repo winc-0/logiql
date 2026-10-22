@@ -38,8 +38,20 @@ desktop.ini
 *.bak-*
 *.bak_*
 
-# ============ 评测原始结果（带时间戳，会累积）============
-eval/reports/*.json
+# ============ 第三方二进制（构建时下载，不入库）============
+# ES 的 IK 分词插件约 4.5MB，改由 docker/elasticsearch/Dockerfile 在构建时拉取
+/docker/elasticsearch/plugins/*.zip
+
+# ============ 构建产物 ============
+/build/
+/dist/
+*.whl
+
+# ============ 评测原始结果 ============
+# 注意：这里**不能**忽略 *.json。结果 JSON 是评测结论唯一的原始证据，
+# 报告 md 只是它的渲染结果。曾经把 eval/reports/*.json 排除在外，导致仓库里
+# 几份 md 无法追溯是哪一次运行产生的，README 与报告数字对不上时无从核对。
+# 单份 JSON 约 100~180KB，15 份合计约 1.3MB，这个代价换「每个数字可复核」，值得。
 
 # ============ 前端 ============
 frontend/node_modules/
