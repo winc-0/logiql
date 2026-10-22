@@ -14,6 +14,10 @@ SQL 只读守卫。
 - **全文扫描写关键字作为第二道保险**，用于拦住 `WITH ... DELETE`（MySQL 8 支持，
   首关键字是 with 但本质是写操作）这类情况。
 - 扫描前先剥离注释与字符串字面量，避免 `WHERE name = 'delete'` 这类误判。
+- **但 MySQL 的 `/*! ... */` 是可执行注释**，剥掉正好把攻击载荷藏起来，
+  所以见到 `/*!` 直接拒，不做任何剥离处理。
+- **写关键字扫描要跳过函数调用位与反引号标识符**：`REPLACE()` / `INSERT()` 是
+  MySQL 字符串函数，`` `update` `` 是列名，它们不是写操作。
 """
 
 from __future__ import annotations
@@ -43,18 +47,28 @@ _WRITE_KEYWORDS = re.compile(
     re.IGNORECASE,
 )
 
+# MySQL 可执行注释：`/*!50000 DELETE ... */` 会被服务器真正执行，
+# 但它长得像注释。见到就拒——正常 NL2SQL 输出不会含这种结构。
+_EXECUTABLE_COMMENT = re.compile(r"/\*!")
+
 # SELECT ... INTO OUTFILE / DUMPFILE 会把结果写到数据库服务器磁盘上，
 # 是只读外壳下的写操作，单独拦掉
 _INTO_FILE = re.compile(r"\binto\s+(outfile|dumpfile)\b", re.IGNORECASE)
 
-# 加锁读：会阻塞其它会话的写入，只读场景不应出现
-_LOCKING_READ = re.compile(r"\b(for\s+update|lock\s+in\s+share\s+mode)\b", re.IGNORECASE)
+# 加锁读：会阻塞其它会话的写入，只读场景不应出现。
+# FOR SHARE 是 MySQL 8 对 LOCK IN SHARE MODE 的新写法，两者等价，都要拦
+_LOCKING_READ = re.compile(
+    r"\b(?:for\s+(?:update|share)|lock\s+in\s+share\s+mode)\b",
+    re.IGNORECASE,
+)
 
 # 行注释 / 块注释 / 字符串字面量，判断前先剥掉，避免注释里的关键字造成误判
 # 注意：不能把 `;` 当注释起始符吃掉，否则多语句检测会失效
 _LINE_COMMENT = re.compile(r"(--\s|#)[^\n]*", re.IGNORECASE)
 _BLOCK_COMMENT = re.compile(r"/\*.*?\*/", re.DOTALL)
 _STRING_LITERAL = re.compile(r"'(?:''|\\.|[^'\\])*'|\"(?:\"\"|\\.|[^\"\\])*\"")
+# 反引号标识符：`` `update` `` 是列名而非关键字，剥成占位符再扫关键字
+_BACKTICK_IDENT = re.compile(r"`(?:``|[^`])*`")
 
 
 def _strip_noise(sql: str) -> str:
@@ -65,9 +79,32 @@ def _strip_noise(sql: str) -> str:
     return text.strip()
 
 
+def _blank_identifiers(sql: str) -> str:
+    """把反引号标识符替换成占位符，避免列名里的关键字被当成写操作。"""
+    return _BACKTICK_IDENT.sub(" ident ", sql)
+
+
 def _split_statements(sql: str) -> list[str]:
     """按分号切分，返回非空语句片段。"""
     return [part.strip() for part in sql.split(";") if part.strip()]
+
+
+def _find_write_keyword(statement: str) -> re.Match[str] | None:
+    """
+    在已剥离噪声的语句里找写操作关键字。
+
+    跳过两类误伤：
+    - **函数调用位**：关键字后面（允许空白）紧跟 `(` 时视为函数名，
+      如 `REPLACE(warehouse_name, '1仓', '')`、`INSERT(s, pos, len, new)`。
+      `REPLACE INTO t (a) VALUES (1)` 这种真写操作，replace 后面跟的是 `into` 不是 `(`, 照样命中。
+    - **反引号标识符**：调用前已由 `_blank_identifiers` 替换掉。
+    """
+    for match in _WRITE_KEYWORDS.finditer(statement):
+        rest = statement[match.end():]
+        if rest.lstrip().startswith("("):
+            continue
+        return match
+    return None
 
 
 def is_read_only(sql: str) -> tuple[bool, str]:
@@ -79,7 +116,11 @@ def is_read_only(sql: str) -> tuple[bool, str]:
     if not sql or not sql.strip():
         return False, "SQL 为空"
 
-    cleaned = _strip_noise(sql)
+    # 必须在剥离注释之前检查：`/*! ... */` 剥掉之后载荷就消失了
+    if _EXECUTABLE_COMMENT.search(sql):
+        return False, "含 MySQL 可执行注释 `/*! ... */`，其内容会被服务器执行，已拒绝"
+
+    cleaned = _blank_identifiers(_strip_noise(sql))
 
     parts = _split_statements(cleaned)
     # 多语句：典型形态是 `SELECT ...; DROP TABLE x`，单看首关键字放行会中招
@@ -97,13 +138,13 @@ def is_read_only(sql: str) -> tuple[bool, str]:
         return False, "SELECT ... INTO OUTFILE / DUMPFILE 属于写文件操作，已拒绝"
 
     if _LOCKING_READ.search(statement):
-        return False, "加锁读（FOR UPDATE / LOCK IN SHARE MODE）不属于只读查询，已拒绝"
+        return False, "加锁读（FOR UPDATE / FOR SHARE / LOCK IN SHARE MODE）不属于只读查询，已拒绝"
 
     # 全文扫描兜底：拦住 `WITH ... DELETE` 这类首关键字合法但本质是写操作的语句。
     # 元数据类语句（SHOW / DESCRIBE / EXPLAIN）跳过——它们不是可执行语句，
     # 且 `SHOW CREATE TABLE` 这种会命中 create 造成误判。
     if head not in _META_HEADS:
-        hit = _WRITE_KEYWORDS.search(statement)
+        hit = _find_write_keyword(statement)
         if hit:
             return False, f"语句中包含写操作关键字 `{hit.group(1).upper()}`"
 

@@ -51,13 +51,26 @@ class TestReadOnlyAccepted(unittest.TestCase):
         self._ok("-- 查询订单\nSELECT 1")
         self._ok("# 查询订单\nSELECT 1")
 
+    def test_字符串函数不误伤(self):
+        # REPLACE() / INSERT() 是 MySQL 字符串函数，不是写操作，
+        # 关键字后面紧跟 `(` 一律视为函数名
+        self._ok("SELECT REPLACE(warehouse_name, '1仓', '') AS w, COUNT(*) FROM fact_outbound GROUP BY w")
+        self._ok("SELECT INSERT(warehouse_name, 1, 2, '华东') FROM fact_outbound")
+        self._ok("SELECT REPLACE(a, 'x', 'y'), REPLACE (b, 'p', 'q') FROM t")
+
+    def test_反引号标识符不误伤(self):
+        # 反引号里的是列名，哪怕整词就是关键字
+        self._ok("SELECT `update` FROM t")
+        self._ok("SELECT `drop`, `delete` FROM t WHERE `update` > 1")
+
 
 class TestWriteRejected(unittest.TestCase):
     def _no(self, sql, keyword=""):
         ok, reason = is_read_only(sql)
         self.assertFalse(ok, f"应拒绝但放行了：{sql!r}")
         if keyword:
-            self.assertIn(keyword, reason)
+            # 拒绝原因里关键字大小写视命中阶段而定，统一按小写比对
+            self.assertIn(keyword.lower(), reason.lower())
 
     def test_dml(self):
         for sql in (
@@ -70,6 +83,14 @@ class TestWriteRejected(unittest.TestCase):
         ):
             with self.subTest(sql=sql):
                 self._no(sql)
+
+    def test_函数白名单没有开出后门(self):
+        # 「关键字紧跟括号视为函数」这条规则不能把真写操作放过去：
+        # REPLACE INTO / INSERT INTO 后面跟的是 into 而不是括号，仍然命中
+        # （首关键字就先被白名单拦掉的，断言落到白名单原因上）
+        self._no("REPLACE INTO orders (id) VALUES (1)", "replace")
+        self._no("INSERT INTO orders (id) VALUES (1)", "insert")
+        self._no("DELETE FROM orders WHERE id IN (SELECT id FROM tmp)", "delete")
 
     def test_ddl与其它(self):
         for sql in (
@@ -94,7 +115,20 @@ class TestWriteRejected(unittest.TestCase):
 
     def test_只读外壳下的写操作(self):
         self._no("SELECT * FROM orders INTO OUTFILE '/tmp/a.csv'", "OUTFILE")
+        self._no("SELECT * FROM orders INTO DUMPFILE '/tmp/a.bin'", "OUTFILE")
         self._no("SELECT * FROM orders FOR UPDATE", "加锁")
+
+    def test_可执行注释里藏写操作(self):
+        # MySQL 的 /*! ... */ 是**可执行注释**，服务器会执行里面的内容。
+        # 剥注释再判断的老实现会把载荷一起剥掉，正好放行
+        self._no("SELECT * FROM orders /*!50000 INTO OUTFILE '/tmp/x' */", "可执行注释")
+        self._no("SELECT 1 /*!50000 ; DROP TABLE orders */", "可执行注释")
+        self._no("/*!50000 DELETE FROM orders */", "可执行注释")
+
+    def test_for_share加锁读(self):
+        # MySQL 8 里 FOR SHARE 等价于 LOCK IN SHARE MODE，同样会占共享锁
+        self._no("SELECT * FROM orders FOR SHARE", "加锁")
+        self._no("SELECT * FROM orders LOCK IN SHARE MODE", "加锁")
 
     def test_空语句(self):
         for sql in ("", "   ", "\n\t", ";", "-- 只有注释\n"):
