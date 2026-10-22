@@ -7,9 +7,9 @@
 __pycache__/
 *.py[cod]
 *.egg-info/
-.venv/
-venv/
-env/
+/.venv/
+/venv/
+/env/
 
 # ============ 日志 ============
 logs/
@@ -21,8 +21,12 @@ logs/
 *.iml
 
 # ============ 模型文件（体积大，按需自行下载）============
-docker/embedding/
-models/
+# ⚠️ 目录规则必须锚定到仓库根（前导 /）。
+#    写成 `models/` 会匹配任意层级的 models 目录，把 app/models/（ORM 层）
+#    一并忽略 —— 源码进不了仓库，clone 后 import 直接 ModuleNotFoundError。
+#    同理 `docker/embedding/` 带斜杠本身已锚定，这里显式补 / 表明意图。
+/docker/embedding/
+/models/
 
 # ============ 系统文件 ============
 .DS_Store
