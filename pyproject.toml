@@ -34,8 +34,36 @@ dependencies = [
 
 # 项目是平铺布局（app/ conf/ prompts/ docker/ 同级），setuptools 无法自动推断顶层包，
 # 这里显式声明，否则 pip install -e . 会报 "Multiple top-level packages discovered"。
+#
+# ⚠️ 必须把子包逐个列全。只写顶层 ["app", "conf"] 时，编辑安装（pip install -e / uv sync）
+#    靠路径映射还能 import，但**构建 wheel 会只剩 app/__init__.py**，agent / models /
+#    repositories 全部丢失 —— 与 .gitignore 未锚定 models/ 吞掉 app/models/ 属于同一类
+#    错误：顶层写对了，子层全丢。新增子包时记得同步这里。
 [tool.setuptools]
-packages = ["app", "conf"]
+packages = [
+    "app",
+    "app.agent",
+    "app.agent.nodes",
+    "app.api",
+    "app.api.routers",
+    "app.api.schemas",
+    "app.clients",
+    "app.conf",
+    "app.core",
+    "app.models",
+    "app.models.es",
+    "app.models.mysql",
+    "app.models.qdrant",
+    "app.prompt",
+    "app.repositories",
+    "app.repositories.es",
+    "app.repositories.mysql",
+    "app.repositories.qdrant",
+    "app.scripts",
+    "app.services",
+    "app.test",
+    "conf",
+]
 
 [tool.setuptools.package-data]
 "app" = ["**/*.yaml", "**/*.yml", "**/*.jinja", "**/*.jinja2", "**/*.txt"]
