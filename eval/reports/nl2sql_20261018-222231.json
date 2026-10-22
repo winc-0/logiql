@@ -1,0 +1,3388 @@
+{
+  "stamp": "20261018-222231",
+  "dataset": "nl2sql_gold.jsonl",
+  "n_questions": 56,
+  "strategies": {
+    "llm_only": [
+      {
+        "sql": "SELECT SUM(order_amount) AS GMV FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a01",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT COUNT(*) AS order_count FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a02",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT SUM(order_quantity) AS total_quantity FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a03",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT AVG(order_amount) AS AOV FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a04",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT MAX(order_amount) AS max_order_amount FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a05",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT COUNT(DISTINCT customer_id) AS customer_count FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a06",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT \n  dr.province AS 省份,\n  SUM(fo.order_amount) AS 销售额\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025\nGROUP BY dr.province\nORDER BY dr.province",
+        "ex": 1,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "",
+        "qid": "b01",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  dr.region_name AS 地区,\n  SUM(fo.order_amount) AS 销售额\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025\nGROUP BY dr.region_name",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b02",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  dp.category AS 品类,\n  SUM(fo.order_amount) AS 销售额\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025\nGROUP BY dp.category",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b03",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  dp.brand AS 品牌,\n  SUM(fo.order_amount) AS 销售额\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025\nGROUP BY dp.brand",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b04",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  d.year AS 年,\n  d.quarter AS 季度,\n  SUM(f.order_amount) AS 销售额\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.year = 2025\nGROUP BY d.year, d.quarter\nORDER BY d.year, d.quarter",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "b05",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT d.month AS 月份, COUNT(f.order_id) AS 订单量\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.year = 2025\nGROUP BY d.month\nORDER BY d.month",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b06",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  dc.member_level AS 会员等级,\n  SUM(fo.order_amount) AS 销售额\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025\nGROUP BY dc.member_level",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b07",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  c.gender AS 性别,\n  SUM(f.order_amount) AS 消费金额\nFROM fact_order f\nJOIN dim_customer c ON f.customer_id = c.customer_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.year = 2025\nGROUP BY c.gender",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b08",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  dr.region_name AS 地区,\n  SUM(fo.order_quantity) AS 销量\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025\nGROUP BY dr.region_name",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b09",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  dp.category AS 品类,\n  SUM(fo.order_quantity) AS 销量\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025\nGROUP BY dp.category",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b10",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT d.category\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.year = 2025\nGROUP BY d.category\nORDER BY SUM(f.order_amount) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c01",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT d.brand\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.year = 2025\nGROUP BY d.brand\nORDER BY SUM(f.order_amount) DESC\nLIMIT 3",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c02",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT dp.product_name\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025\nGROUP BY dp.product_name\nORDER BY SUM(fo.order_quantity) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c03",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT dr.region_name\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025\nGROUP BY dr.region_name\nORDER BY SUM(fo.order_amount) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c04",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT d.category\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nWHERE f.date_id >= 20250101 AND f.date_id <= 20251231\nGROUP BY d.category\nORDER BY SUM(f.order_amount) ASC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c05",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT d.category\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.year = 2025 AND dt.month = 11\nGROUP BY d.category\nORDER BY SUM(f.order_amount) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c06",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT dc.customer_name\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025\nGROUP BY dc.customer_name\nORDER BY SUM(fo.order_amount) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c07",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT province\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025 AND dd.quarter = 'Q4'\nGROUP BY province\nORDER BY SUM(fo.order_amount) DESC\nLIMIT 2",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c08",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT SUM(t1.order_amount) AS 销售额\nFROM fact_order t1\nJOIN dim_region t2 ON t1.region_id = t2.region_id\nJOIN dim_date t3 ON t1.date_id = t3.date_id\nWHERE t2.region_name = '华东' AND t3.year = 2025",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d01",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT SUM(t1.order_amount) AS sales_amount\nFROM fact_order t1\nJOIN dim_product t2 ON t1.product_id = t2.product_id\nJOIN dim_date t3 ON t1.date_id = t3.date_id\nWHERE t2.brand = '苹果' AND t3.year = 2025",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d02",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT SUM(t1.order_quantity) AS total_quantity\nFROM fact_order t1\nJOIN dim_product t2 ON t1.product_id = t2.product_id\nJOIN dim_date t3 ON t1.date_id = t3.date_id\nWHERE t2.category = '手机数码' AND t3.year = 2025",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d03",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT COUNT(*) AS order_count\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nWHERE dc.member_level = '铂金' AND fo.date_id >= 20250101 AND fo.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d04",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT SUM(t1.order_amount) AS sales_amount\nFROM fact_order t1\nJOIN dim_region t2 ON t1.region_id = t2.region_id\nJOIN dim_date t3 ON t1.date_id = t3.date_id\nWHERE t2.province = '广东省' AND t3.year = 2025 AND t3.quarter = 'Q4'",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d05",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT SUM(t1.order_amount) AS consumption_amount\nFROM fact_order t1\nJOIN dim_customer t2 ON t1.customer_id = t2.customer_id\nJOIN dim_region t3 ON t1.region_id = t3.region_id\nJOIN dim_date t4 ON t1.date_id = t4.date_id\nWHERE t3.region_name = '华东' \n  AND t2.gender = '女' \n  AND t4.year = 2025",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d06",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT \n  dr.region_name AS 地区,\n  SUM(fo.order_amount) AS 销售额\nFROM fact_order fo\nJOIN dim_date dd ON fo.date_id = dd.date_id\nJOIN dim_region dr ON fo.region_id = dr.region_id\nWHERE dd.year = 2025 AND dd.quarter = 'Q4'\nGROUP BY dr.region_name",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d07",
+        "level": "D",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  d.date_id,\n  d.month,\n  SUM(f.order_amount) AS sales_amount\nFROM fact_order f\nJOIN dim_product p ON f.product_id = p.product_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE p.category = '食品饮料' \n  AND d.year = 2025\nGROUP BY d.date_id, d.month\nORDER BY d.month",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "d08",
+        "level": "D",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  d.year AS 年份,\n  SUM(f.order_amount) AS 销售额\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.year IN (2024, 2025)\nGROUP BY d.year\nORDER BY d.year",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e01",
+        "level": "E",
+        "kind": "compare"
+      },
+      {
+        "sql": "SELECT SUM(order_amount) AS total_sales\nFROM fact_order fo\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025 AND dd.month = 11",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e02",
+        "level": "E",
+        "kind": "time_filter"
+      },
+      {
+        "sql": "SELECT SUM(t1.order_amount) AS GMV\nFROM fact_order t1\nJOIN dim_date t2 ON t1.date_id = t2.date_id\nWHERE t2.year = 2025",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e03",
+        "level": "E",
+        "kind": "metric"
+      },
+      {
+        "sql": "SELECT \n  dp.category AS 品类,\n  AVG(fo.order_amount) AS 平均订单金额\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025\nGROUP BY dp.category",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e04",
+        "level": "E",
+        "kind": "metric"
+      },
+      {
+        "sql": "SELECT SUM(t1.order_amount) AS 销售额\nFROM fact_order t1\nJOIN dim_date t2 ON t1.date_id = t2.date_id\nWHERE t2.year = 2025 AND t2.month BETWEEN 7 AND 12",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e05",
+        "level": "E",
+        "kind": "time_filter"
+      },
+      {
+        "sql": "SELECT \n  dp.brand,\n  SUM(fo.order_amount) AS sales_amount\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025 AND dd.month = 12\nGROUP BY dp.brand",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e06",
+        "level": "E",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT d.category\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.year = 2025\nGROUP BY d.category\nHAVING SUM(f.order_amount) > 500000",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e07",
+        "level": "E",
+        "kind": "having"
+      },
+      {
+        "sql": "SELECT \n  SUM(CASE WHEN d.year = 2025 AND d.quarter = 'Q3' THEN f.order_amount ELSE 0 END) AS q3_sales,\n  SUM(CASE WHEN d.year = 2025 AND d.quarter = 'Q4' THEN f.order_amount ELSE 0 END) AS q4_sales\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.year = 2025 AND d.quarter IN ('Q3', 'Q4')",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "e08",
+        "level": "E",
+        "kind": "compare"
+      },
+      {
+        "sql": "SELECT \n  dpr.category AS 品类,\n  SUM(fo.order_amount) AS 销售额\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_product dpr ON fo.product_id = dpr.product_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025 \n  AND dr.region_name = '华东'\nGROUP BY dpr.category",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f01",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  t1.category AS 品类,\n  t1.brand AS 品牌,\n  t1.total_amount AS 销售额\nFROM (\n  SELECT \n    dp.category,\n    dp.brand,\n    SUM(fo.order_amount) AS total_amount,\n    ROW_NUMBER() OVER (PARTITION BY dp.category ORDER BY SUM(fo.order_amount) DESC) AS rn\n  FROM fact_order fo\n  JOIN dim_product dp ON fo.product_id = dp.product_id\n  JOIN dim_date dd ON fo.date_id = dd.date_id\n  WHERE dd.year = 2025\n  GROUP BY dp.category, dp.brand\n) t1\nWHERE t1.rn = 1",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "f02",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  d.date_id,\n  d.quarter AS 季度,\n  p.brand AS 品牌,\n  SUM(f.order_quantity) AS 销量\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nJOIN dim_product p ON f.product_id = p.product_id\nWHERE d.year = 2025\nGROUP BY d.quarter, p.brand\nORDER BY d.quarter, p.brand",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 0,
+        "reason": "链路执行异常：OperationalError",
+        "qid": "f03",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  dr.region_name AS 地区,\n  SUM(fo.order_amount) AS 消费金额\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dc.member_level = '铂金' \n  AND dd.year = 2025\nGROUP BY dr.region_name",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f04",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  dp.category,\n  SUM(fo.order_quantity) AS销量\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025\nGROUP BY dp.category\nORDER BY SUM(fo.order_amount) DESC\nLIMIT 3",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f05",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT SUM(t1.order_amount) AS sales_amount\nFROM fact_order t1\nJOIN dim_customer t2 ON t1.customer_id = t2.customer_id\nJOIN dim_region t3 ON t1.region_id = t3.region_id\nJOIN dim_product t4 ON t1.product_id = t4.product_id\nJOIN dim_date t5 ON t1.date_id = t5.date_id\nWHERE t5.year = 2025\n  AND t3.region_name = '华南'\n  AND t2.gender = '女'\n  AND t4.category = '手机数码'",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f06",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT dc.member_level, AVG(fo.order_amount) AS avg_order_amount\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025\nGROUP BY dc.member_level",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f07",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  d.month,\n  SUM(f.order_amount) AS current_month_sales,\n  LAG(SUM(f.order_amount)) OVER (ORDER BY d.year, d.month) AS previous_month_sales,\n  SUM(f.order_amount) - LAG(SUM(f.order_amount)) OVER (ORDER BY d.year, d.month) AS month_on_month_growth\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.year = 2025\nGROUP BY d.year, d.month\nORDER BY d.year, d.month",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "f08",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  dp.brand,\n  SUM(fo.order_amount) AS brand_sales,\n  SUM(SUM(fo.order_amount)) OVER() AS total_sales,\n  ROUND(SUM(fo.order_amount) / SUM(SUM(fo.order_amount)) OVER() * 100, 2) AS percentage\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025\nGROUP BY dp.brand\nORDER BY brand_sales DESC",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "f09",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  dr.province AS 省份,\n  AVG(fo.order_amount) AS 客单价\nFROM fact_order fo\nJOIN dim_date dd ON fo.date_id = dd.date_id\nJOIN dim_region dr ON fo.region_id = dr.region_id\nWHERE dd.year = 2025\nGROUP BY dr.province\nORDER BY 省份",
+        "ex": 1,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "",
+        "qid": "f10",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT dc.customer_name\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nWHERE fo.date_id >= 20250101 AND fo.date_id <= 20251231\nGROUP BY dc.customer_name\nORDER BY COUNT(*) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f11",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  dr.region_name AS 地区,\n  dc.member_level AS 会员等级,\n  COUNT(fo.order_id) AS 订单数\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025\nGROUP BY dr.region_name, dc.member_level",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f12",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT COUNT(DISTINCT t1.customer_id) \nFROM fact_order t1 \nJOIN dim_product t2 ON t1.product_id = t2.product_id \nWHERE t2.category = '手机数码' \n  AND t1.date_id >= 20250101 \n  AND t1.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f13",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  d.month AS 月,\n  SUM(f.order_amount) AS 累计销售额\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.year = 2025\nGROUP BY d.month\nORDER BY d.month",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "f14",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  dr.province AS 省份,\n  SUM(fo.order_quantity) AS 销量\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nJOIN dim_region dr ON fo.region_id = dr.region_id\nWHERE dd.year = 2025 \n  AND dp.category = '家用电器'\nGROUP BY dr.province",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f15",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT d.brand\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.year = 2025\nGROUP BY d.brand\nORDER BY SUM(f.order_amount) / SUM(f.order_quantity) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f16",
+        "level": "F",
+        "kind": "advanced"
+      }
+    ],
+    "col_recall": [
+      {
+        "sql": "SELECT SUM(order_amount) AS total_sales FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a01",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT COUNT(*) AS order_count FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a02",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT SUM(order_quantity) AS total_quantity FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a03",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT AVG(order_amount) AS avg_order_amount FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a04",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT MAX(order_amount) AS max_order_amount FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a05",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT COUNT(DISTINCT customer_id) AS customer_count FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a06",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT \n  dr.province AS 省份,\n  SUM(fo.order_amount) AS 销售额\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025\nGROUP BY dr.province\nORDER BY dr.province",
+        "ex": 1,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "",
+        "qid": "b01",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  dr.region_name AS 地区,\n  SUM(fo.order_amount) AS 销售额\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dr.region_name",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b02",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT d.category AS 品类, SUM(f.order_amount) AS 销售额\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.date_id >= 20250101 AND dt.date_id <= 20251231\nGROUP BY d.category",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b03",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT d.brand, SUM(f.order_amount) AS sales_amount\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.date_id >= 20250101 AND dt.date_id <= 20251231\nGROUP BY d.brand",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b04",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT d.quarter, SUM(f.order_amount) AS sales_amount\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.year = 2025\nGROUP BY d.quarter\nORDER BY CASE d.quarter WHEN 'Q1' THEN 1 WHEN 'Q2' THEN 2 WHEN 'Q3' THEN 3 WHEN 'Q4' THEN 4 END",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b05",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  d.month AS 月份,\n  COUNT(f.order_id) AS 订单量\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.year = 2025\nGROUP BY d.month\nORDER BY d.month",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b06",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT dc.member_level, SUM(fo.order_amount) AS sales_amount\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dc.member_level",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b07",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  c.gender AS 性别,\n  SUM(f.order_amount) AS 消费金额\nFROM fact_order f\nJOIN dim_customer c ON f.customer_id = c.customer_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id >= 20250101 AND d.date_id <= 20251231\nGROUP BY c.gender",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b08",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  dr.region_name AS 地区,\n  SUM(fo.order_quantity) AS 销量\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dr.region_name",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b09",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT d.category AS 品类, SUM(f.order_quantity) AS 销量\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.date_id >= 20250101 AND dt.date_id <= 20251231\nGROUP BY d.category",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b10",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT d.category\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nWHERE f.date_id >= 20250101 AND f.date_id <= 20251231\nGROUP BY d.category\nORDER BY SUM(f.order_amount) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c01",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT d.brand\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.date_id >= 20250101 AND dt.date_id <= 20251231\nGROUP BY d.brand\nORDER BY SUM(f.order_amount) DESC\nLIMIT 3",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c02",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT dp.product_name\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dp.product_name\nORDER BY SUM(fo.order_quantity) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c03",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT dr.region_name\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dr.region_name\nORDER BY SUM(fo.order_amount) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c04",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT d.category\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.date_id >= 20250101 AND dt.date_id <= 20251231\nGROUP BY d.category\nORDER BY SUM(f.order_amount) ASC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c05",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT dp.category\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20251101 AND dd.date_id <= 20251130\nGROUP BY dp.category\nORDER BY SUM(fo.order_amount) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c06",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT dc.customer_name\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dc.customer_name\nORDER BY SUM(fo.order_amount) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c07",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT province\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025 AND dd.quarter = 'Q4'\nGROUP BY province\nORDER BY SUM(fo.order_amount) DESC\nLIMIT 2",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c08",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT SUM(t2.order_amount) AS sales_amount\nFROM fact_order t2\nJOIN dim_region t1 ON t2.region_id = t1.region_id\nJOIN dim_date t3 ON t2.date_id = t3.date_id\nWHERE t1.region_name = '华东' AND t3.date_id BETWEEN 20250101 AND 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d01",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT SUM(t1.order_amount) AS sales_amount\nFROM fact_order t1\nJOIN dim_product t2 ON t1.product_id = t2.product_id\nJOIN dim_date t3 ON t1.date_id = t3.date_id\nWHERE t2.brand = '苹果' \n  AND t3.date_id >= 20250101 \n  AND t3.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d02",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT SUM(t2.order_quantity) AS total_quantity\nFROM dim_product t1\nJOIN fact_order t2 ON t1.product_id = t2.product_id\nJOIN dim_date t3 ON t2.date_id = t3.date_id\nWHERE t1.category = '手机数码' AND t3.date_id BETWEEN 20250101 AND 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d03",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT COUNT(*) AS order_count\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nWHERE dc.member_level = '铂金' AND fo.date_id >= 20250101 AND fo.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d04",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT SUM(t2.order_amount) AS sales_amount\nFROM fact_order t2\nJOIN dim_region t1 ON t2.region_id = t1.region_id\nJOIN dim_date t3 ON t2.date_id = t3.date_id\nWHERE t1.province = '广东省'\n  AND t3.quarter = 'Q4'\n  AND t3.date_id BETWEEN 20251001 AND 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d05",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT SUM(t2.order_amount) AS consumption_amount\nFROM fact_order t2\nJOIN dim_customer t1 ON t2.customer_id = t1.customer_id\nJOIN dim_region t3 ON t2.region_id = t3.region_id\nJOIN dim_date t4 ON t2.date_id = t4.date_id\nWHERE t1.gender = '女' \n  AND t3.region_name = '华东'\n  AND t4.date_id >= 20250101 \n  AND t4.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d06",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT r.region_name AS 地区, SUM(f.order_amount) AS 销售额\nFROM fact_order f\nJOIN dim_region r ON f.region_id = r.region_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.quarter = 'Q4' AND d.date_id BETWEEN 20251001 AND 20251231\nGROUP BY r.region_name",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d07",
+        "level": "D",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n    d.year,\n    d.month,\n    SUM(f.order_amount) AS sales_amount\nFROM fact_order f\nJOIN dim_product p ON f.product_id = p.product_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE p.category = '食品饮料' \n    AND d.year = 2025\nGROUP BY d.year, d.month\nORDER BY d.year, d.month",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "d08",
+        "level": "D",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  CASE \n    WHEN d.date_id >= 20240101 AND d.date_id <= 20241231 THEN '2024'\n    WHEN d.date_id >= 20250101 AND d.date_id <= 20251231 THEN '2025'\n  END AS year,\n  SUM(f.order_amount) AS 销售额\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id BETWEEN 20240101 AND 20251231\nGROUP BY \n  CASE \n    WHEN d.date_id >= 20240101 AND d.date_id <= 20241231 THEN '2024'\n    WHEN d.date_id >= 20250101 AND d.date_id <= 20251231 THEN '2025'\n  END",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e01",
+        "level": "E",
+        "kind": "compare"
+      },
+      {
+        "sql": "SELECT SUM(order_amount) AS total_sales\nFROM fact_order fo\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20251101 AND dd.date_id <= 20251130",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e02",
+        "level": "E",
+        "kind": "time_filter"
+      },
+      {
+        "sql": "SELECT SUM(gmv) AS gmv FROM fact_sales WHERE date_id >= 20250101 AND date_id <= 20251231",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 0,
+        "reason": "链路执行异常：ProgrammingError",
+        "qid": "e03",
+        "level": "E",
+        "kind": "metric"
+      },
+      {
+        "sql": "SELECT d.category, AVG(f.order_amount) AS avg_order_amount\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.date_id >= 20250101 AND dt.date_id <= 20251231\nGROUP BY d.category",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e04",
+        "level": "E",
+        "kind": "metric"
+      },
+      {
+        "sql": "SELECT SUM(order_amount) AS sales_amount\nFROM fact_order fo\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250701 AND dd.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e05",
+        "level": "E",
+        "kind": "time_filter"
+      },
+      {
+        "sql": "SELECT \n    p.brand AS 品牌,\n    SUM(f.order_amount) AS 销售额\nFROM fact_order f\nJOIN dim_product p ON f.product_id = p.product_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id >= 20251201 AND d.date_id <= 20251231\nGROUP BY p.brand",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e06",
+        "level": "E",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT dp.category\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dp.category\nHAVING SUM(fo.order_amount) > 500000",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e07",
+        "level": "E",
+        "kind": "having"
+      },
+      {
+        "sql": "SELECT \n  SUM(CASE WHEN d.quarter = 'Q3' THEN f.order_amount ELSE 0 END) AS q3_sales,\n  SUM(CASE WHEN d.quarter = 'Q4' THEN f.order_amount ELSE 0 END) AS q4_sales\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id BETWEEN 20250701 AND 20251231\n  AND d.quarter IN ('Q3', 'Q4')",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "e08",
+        "level": "E",
+        "kind": "compare"
+      },
+      {
+        "sql": "SELECT \n    dp.category AS 品类,\n    SUM(fo.order_amount) AS 销售额\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dr.region_name = '华东'\n    AND dd.date_id >= 20250101 \n    AND dd.date_id <= 20251231\nGROUP BY dp.category",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f01",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  p.category AS 品类,\n  p.brand AS 品牌,\n  SUM(f.order_amount) AS 销售额\nFROM fact_order f\nJOIN dim_product p ON f.product_id = p.product_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id >= 20250101 AND d.date_id <= 20251231\nGROUP BY p.category, p.brand\nHAVING SUM(f.order_amount) = (\n  SELECT MAX(sub.total_amount)\n  FROM (\n    SELECT SUM(f2.order_amount) AS total_amount\n    FROM fact_order f2\n    JOIN dim_product p2 ON f2.product_id = p2.product_id\n    JOIN dim_date d2 ON f2.date_id = d2.date_id\n    WHERE d2.date_id >= 20250101 AND d2.date_id <= 20251231\n      AND p2.category = p.category\n    GROUP BY p2.brand\n  ) sub\n)\nORDER BY p.category",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "f02",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  d.date_id,\n  dd.quarter,\n  dp.brand,\n  SUM(fo.order_quantity) AS order_quantity\nFROM fact_order fo\nJOIN dim_date dd ON fo.date_id = dd.date_id\nJOIN dim_product dp ON fo.product_id = dp.product_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dd.quarter, dp.brand\nORDER BY dd.quarter, dp.brand",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 0,
+        "reason": "链路执行异常：OperationalError",
+        "qid": "f03",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n    r.region_name AS 地区,\n    SUM(f.order_amount) AS 消费金额\nFROM fact_order f\nJOIN dim_customer c ON f.customer_id = c.customer_id\nJOIN dim_region r ON f.region_id = r.region_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE c.member_level = '铂金' \n    AND d.date_id >= 20250101 \n    AND d.date_id <= 20251231\nGROUP BY r.region_name",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f04",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  p.category,\n  SUM(f.order_quantity) AS total_quantity\nFROM \n  fact_order f\nJOIN \n  dim_product p ON f.product_id = p.product_id\nJOIN \n  dim_date d ON f.date_id = d.date_id\nWHERE \n  d.date_id >= 20250101 AND d.date_id <= 20251231\nGROUP BY \n  p.category\nORDER BY \n  SUM(f.order_amount) DESC\nLIMIT 3",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f05",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT SUM(t1.order_amount) AS sales_amount\nFROM fact_order t1\nJOIN dim_region t2 ON t1.region_id = t2.region_id\nJOIN dim_customer t3 ON t1.customer_id = t3.customer_id\nJOIN dim_product t4 ON t1.product_id = t4.product_id\nJOIN dim_date t5 ON t1.date_id = t5.date_id\nWHERE t2.region_name = '华南'\n  AND t3.gender = '女'\n  AND t4.category = '手机数码'\n  AND t5.date_id >= 20250101\n  AND t5.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f06",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT dc.member_level, AVG(fo.order_amount) AS avg_order_amount\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nWHERE fo.date_id >= 20250101 AND fo.date_id <= 20251231\nGROUP BY dc.member_level",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f07",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  d1.month AS 月,\n  SUM(f1.order_amount) AS 当月销售额,\n  COALESCE(SUM(f2.order_amount), 0) AS 上月销售额,\n  ROUND(SUM(f1.order_amount) - COALESCE(SUM(f2.order_amount), 0), 2) AS 较上月增长额\nFROM dim_date d1\nJOIN fact_order f1 ON d1.date_id = f1.date_id\nLEFT JOIN dim_date d2 ON d1.year = d2.year AND d1.month = d2.month + 1\n  OR (d1.year = d2.year + 1 AND d1.month = 1 AND d2.month = 12)\nLEFT JOIN fact_order f2 ON d2.date_id = f2.date_id\nWHERE d1.year = 2025\nGROUP BY d1.month, d1.year\nORDER BY d1.month",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "f08",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  dp.brand,\n  SUM(fo.order_amount) AS brand_sales,\n  ROUND(SUM(fo.order_amount) / (SELECT SUM(order_amount) FROM fact_order fo2 JOIN dim_date dd2 ON fo2.date_id = dd2.date_id WHERE dd2.year = 2025) * 100, 2) AS percentage_of_total\nFROM fact_order fo\nJOIN dim_date dd ON fo.date_id = dd.date_id\nJOIN dim_product dp ON fo.product_id = dp.product_id\nWHERE dd.year = 2025\nGROUP BY dp.brand\nORDER BY brand_sales DESC",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "f09",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n    dr.province AS 省份,\n    SUM(fo.order_amount) / SUM(fo.order_quantity) AS 客单价\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025\nGROUP BY dr.province",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "f10",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT dc.customer_name\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025\nGROUP BY dc.customer_name\nORDER BY COUNT(*) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f11",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n    r.region_name AS 地区,\n    c.member_level AS 会员等级,\n    COUNT(*) AS 订单数\nFROM fact_order f\nJOIN dim_region r ON f.region_id = r.region_id\nJOIN dim_customer c ON f.customer_id = c.customer_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id >= 20250101 AND d.date_id <= 20251231\nGROUP BY r.region_name, c.member_level\nORDER BY r.region_name, c.member_level",
+        "ex": 1,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "",
+        "qid": "f12",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT COUNT(DISTINCT t2.customer_id) \nFROM fact_order t1 \nJOIN dim_product t2 ON t1.product_id = t2.product_id \nWHERE t2.category = '手机数码' \n  AND t1.date_id >= 20250101 \n  AND t1.date_id <= 20251231",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 0,
+        "reason": "链路执行异常：OperationalError",
+        "qid": "f13",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT d.month, SUM(f.order_amount) AS cumulative_sales\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.year = 2025\nGROUP BY d.month\nORDER BY d.month",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "f14",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  dr.province AS 省份,\n  SUM(fo.order_quantity) AS 销量\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dp.category = '家用电器' \n  AND dd.year = 2025\nGROUP BY dr.province",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f15",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT d.brand\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.year = 2025\nGROUP BY d.brand\nORDER BY SUM(f.order_amount) / SUM(f.order_quantity) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f16",
+        "level": "F",
+        "kind": "advanced"
+      }
+    ],
+    "col_val_recall": [
+      {
+        "sql": "SELECT SUM(order_amount) AS total_sales FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a01",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT COUNT(*) AS order_count FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a02",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT SUM(order_quantity) AS total_quantity FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a03",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT AVG(order_amount) AS avg_order_amount FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a04",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT MAX(order_amount) AS max_order_amount FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a05",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT COUNT(DISTINCT customer_id) AS customer_count FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a06",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT \n  dr.province AS 省份,\n  SUM(fo.order_amount) AS 销售额\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025\nGROUP BY dr.province\nORDER BY dr.province",
+        "ex": 1,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "",
+        "qid": "b01",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT r.region_name AS 地区, SUM(f.order_amount) AS 销售额\nFROM fact_order f\nJOIN dim_region r ON f.region_id = r.region_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id >= 20250101 AND d.date_id <= 20251231\nGROUP BY r.region_name",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b02",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT d.category, SUM(f.order_amount) AS sales_amount\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.date_id >= 20250101 AND dt.date_id <= 20251231\nGROUP BY d.category",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b03",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  p.brand AS 品牌,\n  SUM(f.order_amount) AS 销售额\nFROM fact_order f\nJOIN dim_product p ON f.product_id = p.product_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id >= 20250101 AND d.date_id <= 20251231\nGROUP BY p.brand",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b04",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT d.quarter, SUM(f.order_amount) AS sales_amount\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.year = 2025\nGROUP BY d.quarter\nORDER BY CASE d.quarter WHEN 'Q1' THEN 1 WHEN 'Q2' THEN 2 WHEN 'Q3' THEN 3 WHEN 'Q4' THEN 4 END",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b05",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  d.month AS 月份,\n  COUNT(f.order_id) AS 订单量\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.year = 2025\nGROUP BY d.month\nORDER BY d.month",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b06",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT dc.member_level, SUM(fo.order_amount) AS sales_amount\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dc.member_level",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b07",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  c.gender AS 性别,\n  SUM(f.order_amount) AS 消费金额\nFROM fact_order f\nJOIN dim_customer c ON f.customer_id = c.customer_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id >= 20250101 AND d.date_id <= 20251231\nGROUP BY c.gender",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b08",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  dr.region_name AS 地区,\n  SUM(fo.order_quantity) AS 销量\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dr.region_name",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b09",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT d.category AS 品类, SUM(f.order_quantity) AS 销量\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.date_id >= 20250101 AND dt.date_id <= 20251231\nGROUP BY d.category",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b10",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT d.category\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nWHERE f.date_id >= 20250101 AND f.date_id <= 20251231\nGROUP BY d.category\nORDER BY SUM(f.order_amount) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c01",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT d.brand\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.date_id BETWEEN 20250101 AND 20251231\nGROUP BY d.brand\nORDER BY SUM(f.order_amount) DESC\nLIMIT 3",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c02",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT dp.product_name\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dp.product_name\nORDER BY SUM(fo.order_quantity) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c03",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT dr.region_name\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dr.region_name\nORDER BY SUM(fo.order_amount) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c04",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT d.category\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.date_id >= 20250101 AND dt.date_id <= 20251231\nGROUP BY d.category\nORDER BY SUM(f.order_amount) ASC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c05",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT dp.category\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20251101 AND dd.date_id <= 20251130\nGROUP BY dp.category\nORDER BY SUM(fo.order_amount) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c06",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT dc.customer_name\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dc.customer_name\nORDER BY SUM(fo.order_amount) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c07",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT d.province\nFROM fact_order f\nJOIN dim_region d ON f.region_id = d.region_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.year = 2025 AND dt.quarter = 'Q4'\nGROUP BY d.province\nORDER BY SUM(f.order_amount) DESC\nLIMIT 2",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c08",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT SUM(t2.order_amount) AS sales_amount\nFROM fact_order t2\nJOIN dim_region t1 ON t2.region_id = t1.region_id\nJOIN dim_date t3 ON t2.date_id = t3.date_id\nWHERE t1.region_name = '华东' AND t3.date_id BETWEEN 20250101 AND 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d01",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT SUM(t1.order_amount) AS sales_amount\nFROM fact_order t1\nJOIN dim_product t2 ON t1.product_id = t2.product_id\nJOIN dim_date t3 ON t1.date_id = t3.date_id\nWHERE t2.brand = '苹果' AND t3.date_id >= 20250101 AND t3.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d02",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT SUM(t2.order_quantity) AS total_quantity\nFROM dim_product t1\nJOIN fact_order t2 ON t1.product_id = t2.product_id\nJOIN dim_date t3 ON t2.date_id = t3.date_id\nWHERE t1.category = '手机数码' AND t3.date_id BETWEEN 20250101 AND 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d03",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT COUNT(*) AS order_count\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nWHERE dc.member_level = '铂金' AND fo.date_id >= 20250101 AND fo.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d04",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT SUM(t1.order_amount) AS order_amount\nFROM fact_order t1\nJOIN dim_region t2 ON t1.region_id = t2.region_id\nJOIN dim_date t3 ON t1.date_id = t3.date_id\nWHERE t2.province = '广东省' AND t3.year = 2025 AND t3.quarter = 'Q4'",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d05",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT SUM(t2.order_amount) AS consumption_amount\nFROM fact_order t2\nJOIN dim_customer t1 ON t2.customer_id = t1.customer_id\nJOIN dim_region t3 ON t2.region_id = t3.region_id\nJOIN dim_date t4 ON t2.date_id = t4.date_id\nWHERE t1.gender = '女' \n  AND t3.region_name = '华东'\n  AND t4.date_id >= 20250101 \n  AND t4.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d06",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT \n    dr.region_name AS 地区,\n    SUM(fo.order_amount) AS 销售额\nFROM \n    fact_order fo\nJOIN \n    dim_region dr ON fo.region_id = dr.region_id\nJOIN \n    dim_date dd ON fo.date_id = dd.date_id\nWHERE \n    dd.quarter = 'Q4' \n    AND dd.date_id BETWEEN 20251001 AND 20251231\nGROUP BY \n    dr.region_name",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d07",
+        "level": "D",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n    d.year,\n    d.month,\n    SUM(f.order_amount) AS sales_amount\nFROM fact_order f\nJOIN dim_product p ON f.product_id = p.product_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE p.category = '食品饮料' \n    AND d.year = 2025\nGROUP BY d.year, d.month\nORDER BY d.year, d.month",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "d08",
+        "level": "D",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  CASE \n    WHEN d.date_id >= 20240101 AND d.date_id <= 20241231 THEN '2024'\n    WHEN d.date_id >= 20250101 AND d.date_id <= 20251231 THEN '2025'\n  END AS year,\n  SUM(f.order_amount) AS 销售额\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id BETWEEN 20240101 AND 20251231\nGROUP BY \n  CASE \n    WHEN d.date_id >= 20240101 AND d.date_id <= 20241231 THEN '2024'\n    WHEN d.date_id >= 20250101 AND d.date_id <= 20251231 THEN '2025'\n  END",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e01",
+        "level": "E",
+        "kind": "compare"
+      },
+      {
+        "sql": "SELECT SUM(order_amount) AS total_sales\nFROM fact_order fo\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20251101 AND dd.date_id <= 20251130",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e02",
+        "level": "E",
+        "kind": "time_filter"
+      },
+      {
+        "sql": "SELECT SUM(order_amount) AS GMV FROM fact_order fo JOIN dim_date dd ON fo.date_id = dd.date_id WHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e03",
+        "level": "E",
+        "kind": "metric"
+      },
+      {
+        "sql": "SELECT d.category, AVG(f.order_amount) AS avg_order_amount\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.date_id >= 20250101 AND dt.date_id <= 20251231\nGROUP BY d.category",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e04",
+        "level": "E",
+        "kind": "metric"
+      },
+      {
+        "sql": "SELECT SUM(fact_order.order_amount) AS sales_amount\nFROM fact_order\nJOIN dim_date ON fact_order.date_id = dim_date.date_id\nWHERE dim_date.date_id >= 20250701 AND dim_date.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e05",
+        "level": "E",
+        "kind": "time_filter"
+      },
+      {
+        "sql": "SELECT \n    p.brand AS 品牌,\n    SUM(f.order_amount) AS 销售额\nFROM fact_order f\nJOIN dim_product p ON f.product_id = p.product_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id >= 20251201 AND d.date_id <= 20251231\nGROUP BY p.brand",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e06",
+        "level": "E",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT p.category \nFROM fact_order f \nJOIN dim_product p ON f.product_id = p.product_id \nWHERE f.date_id >= 20250101 AND f.date_id <= 20251231 \nGROUP BY p.category \nHAVING SUM(f.order_amount) > 500000",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e07",
+        "level": "E",
+        "kind": "having"
+      },
+      {
+        "sql": "SELECT \n  SUM(CASE WHEN d.quarter = 'Q3' THEN f.order_amount ELSE 0 END) AS q3_sales,\n  SUM(CASE WHEN d.quarter = 'Q4' THEN f.order_amount ELSE 0 END) AS q4_sales\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id BETWEEN 20250701 AND 20251231",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "e08",
+        "level": "E",
+        "kind": "compare"
+      },
+      {
+        "sql": "SELECT \n    dp.category AS 品类,\n    SUM(fo.order_amount) AS 销售额\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dr.region_name = '华东'\n    AND dd.date_id >= 20250101 \n    AND dd.date_id <= 20251231\nGROUP BY dp.category",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f01",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  p.category AS 品类,\n  p.brand AS 品牌,\n  SUM(f.order_amount) AS 销售额\nFROM fact_order f\nJOIN dim_product p ON f.product_id = p.product_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id >= 20250101 AND d.date_id <= 20251231\nGROUP BY p.category, p.brand\nHAVING SUM(f.order_amount) = (\n  SELECT MAX(sub.total_amount)\n  FROM (\n    SELECT SUM(f2.order_amount) AS total_amount\n    FROM fact_order f2\n    JOIN dim_product p2 ON f2.product_id = p2.product_id\n    JOIN dim_date d2 ON f2.date_id = d2.date_id\n    WHERE d2.date_id >= 20250101 AND d2.date_id <= 20251231\n      AND p2.category = p.category\n    GROUP BY p2.brand\n  ) sub\n)\nORDER BY p.category",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "f02",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  d.date_id,\n  d.quarter,\n  p.brand,\n  SUM(f.order_quantity) AS销量\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nJOIN dim_product p ON f.product_id = p.product_id\nWHERE d.date_id >= 20250101 AND d.date_id <= 20251231\nGROUP BY d.quarter, p.brand\nORDER BY d.quarter, p.brand",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 0,
+        "reason": "链路执行异常：OperationalError",
+        "qid": "f03",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n    r.region_name AS 地区,\n    SUM(f.order_amount) AS 消费金额\nFROM fact_order f\nJOIN dim_customer c ON f.customer_id = c.customer_id\nJOIN dim_region r ON f.region_id = r.region_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE c.member_level = '铂金' \n    AND d.date_id >= 20250101 \n    AND d.date_id <= 20251231\nGROUP BY r.region_name",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f04",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  p.category,\n  SUM(f.order_quantity) AS销量\nFROM fact_order f\nJOIN dim_product p ON f.product_id = p.product_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id BETWEEN 20250101 AND 20251231\nGROUP BY p.category\nORDER BY SUM(f.order_amount) DESC\nLIMIT 3",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f05",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT SUM(t2.order_amount) AS sales_amount\nFROM fact_order t2\nJOIN dim_product t1 ON t2.product_id = t1.product_id\nJOIN dim_region t3 ON t2.region_id = t3.region_id\nJOIN dim_customer t4 ON t2.customer_id = t4.customer_id\nJOIN dim_date t5 ON t2.date_id = t5.date_id\nWHERE t3.region_name = '华南'\n  AND t4.gender = '女'\n  AND t1.category = '手机数码'\n  AND t5.date_id >= 20250101\n  AND t5.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f06",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT dc.member_level, AVG(fo.order_amount) AS avg_order_amount\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nWHERE fo.date_id >= 20250101 AND fo.date_id <= 20251231\nGROUP BY dc.member_level",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f07",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  d1.month AS 月,\n  SUM(f1.order_amount) AS 当月销售额,\n  COALESCE(SUM(f2.order_amount), 0) AS 上月销售额,\n  ROUND(SUM(f1.order_amount) - COALESCE(SUM(f2.order_amount), 0), 2) AS 比上月增长额\nFROM dim_date d1\nJOIN fact_order f1 ON d1.date_id = f1.date_id\nLEFT JOIN dim_date d2 ON d1.year = d2.year AND d1.month = d2.month + 1\n  OR (d1.year = d2.year + 1 AND d1.month = 1 AND d2.month = 12)\nLEFT JOIN fact_order f2 ON d2.date_id = f2.date_id\nWHERE d1.year = 2025\nGROUP BY d1.month, d1.year\nORDER BY d1.month",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "f08",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  dp.brand,\n  SUM(fo.order_amount) AS brand_sales,\n  ROUND(SUM(fo.order_amount) / (SELECT SUM(order_amount) FROM fact_order fo2 JOIN dim_date dd2 ON fo2.date_id = dd2.date_id WHERE dd2.year = 2025) * 100, 2) AS percentage_of_total\nFROM fact_order fo\nJOIN dim_date dd ON fo.date_id = dd.date_id\nJOIN dim_product dp ON fo.product_id = dp.product_id\nWHERE dd.year = 2025\nGROUP BY dp.brand\nORDER BY brand_sales DESC",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "f09",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  dr.province AS 省份,\n  SUM(fo.order_amount) / SUM(fo.order_quantity) AS 客单价\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025\nGROUP BY dr.province",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "f10",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT dc.customer_name\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025\nGROUP BY dc.customer_name\nORDER BY COUNT(*) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f11",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  r.region_name AS 地区,\n  c.member_level AS 会员等级,\n  COUNT(*) AS 订单数\nFROM fact_order f\nJOIN dim_region r ON f.region_id = r.region_id\nJOIN dim_customer c ON f.customer_id = c.customer_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id >= 20250101 AND d.date_id <= 20251231\nGROUP BY r.region_name, c.member_level\nORDER BY r.region_name, c.member_level",
+        "ex": 1,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "",
+        "qid": "f12",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT COUNT(DISTINCT t2.customer_id) \nFROM fact_order t1 \nJOIN dim_product t2 ON t1.product_id = t2.product_id \nWHERE t2.category = '手机数码' \n  AND t1.date_id >= 20250101 \n  AND t1.date_id <= 20251231",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 0,
+        "reason": "链路执行异常：OperationalError",
+        "qid": "f13",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT d.month, SUM(f.order_amount) AS cumulative_sales\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.year = 2025\nGROUP BY d.month\nORDER BY d.month",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "f14",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  dr.province AS 省份,\n  SUM(fo.order_quantity) AS 销量\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dp.category = '家用电器' \n  AND dd.year = 2025\nGROUP BY dr.province",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f15",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT dp.brand\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id BETWEEN 20250101 AND 20251231\nGROUP BY dp.brand\nORDER BY SUM(fo.order_amount) / COUNT(DISTINCT fo.customer_id) DESC\nLIMIT 1",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "f16",
+        "level": "F",
+        "kind": "advanced"
+      }
+    ],
+    "full_recall": [
+      {
+        "sql": "SELECT SUM(order_amount) AS total_sales FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a01",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT COUNT(*) AS order_count FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a02",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT SUM(order_quantity) AS total_quantity FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a03",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT AVG(order_amount) AS avg_order_amount FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a04",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT MAX(order_amount) AS max_order_amount FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a05",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT COUNT(DISTINCT customer_id) AS customer_count FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a06",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT \n    dr.province AS 省份,\n    SUM(fo.order_amount) AS 销售额\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025\nGROUP BY dr.province\nORDER BY 省份",
+        "ex": 1,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "",
+        "qid": "b01",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT r.region_name AS 地区, SUM(f.order_amount) AS 销售额\nFROM fact_order f\nJOIN dim_region r ON f.region_id = r.region_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id >= 20250101 AND d.date_id <= 20251231\nGROUP BY r.region_name",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b02",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT d.category AS 品类, SUM(f.order_amount) AS 销售额\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.date_id >= 20250101 AND dt.date_id <= 20251231\nGROUP BY d.category",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b03",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT d.brand, SUM(f.order_amount) AS sales_amount\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.date_id >= 20250101 AND dt.date_id <= 20251231\nGROUP BY d.brand",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b04",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT d.quarter, SUM(f.order_amount) AS sales_amount\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.year = 2025\nGROUP BY d.quarter\nORDER BY CASE d.quarter WHEN 'Q1' THEN 1 WHEN 'Q2' THEN 2 WHEN 'Q3' THEN 3 WHEN 'Q4' THEN 4 END",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b05",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  YEAR(d.date_id) AS year,\n  MONTH(d.date_id) AS month,\n  COUNT(*) AS order_count\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id >= 20250101 AND d.date_id <= 20251231\nGROUP BY YEAR(d.date_id), MONTH(d.date_id)\nORDER BY year, month",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "b06",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  dc.member_level AS `会员等级`,\n  SUM(fo.order_amount) AS `销售额`\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dc.member_level",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b07",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  c.gender AS 性别,\n  SUM(o.order_amount) AS 消费金额\nFROM fact_order o\nJOIN dim_customer c ON o.customer_id = c.customer_id\nJOIN dim_date d ON o.date_id = d.date_id\nWHERE d.date_id >= 20250101 AND d.date_id <= 20251231\nGROUP BY c.gender",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b08",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT dr.region_name AS 地区, SUM(fo.order_quantity) AS 销量\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dr.region_name",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b09",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT d.category, SUM(f.order_quantity) AS销量\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.date_id >= 20250101 AND dt.date_id <= 20251231\nGROUP BY d.category",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b10",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT d.category\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nWHERE f.date_id >= 20250101 AND f.date_id <= 20251231\nGROUP BY d.category\nORDER BY SUM(f.order_amount) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c01",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT brand\nFROM dim_product dp\nJOIN fact_order fo ON dp.product_id = fo.product_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY brand\nORDER BY SUM(fo.order_amount) DESC\nLIMIT 3",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c02",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT dp.product_name\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nWHERE fo.date_id >= 20250101 AND fo.date_id <= 20251231\nGROUP BY dp.product_name\nORDER BY SUM(fo.order_quantity) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c03",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT dr.region_name\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dr.region_name\nORDER BY SUM(fo.order_amount) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c04",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT d.category\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.date_id >= 20250101 AND dt.date_id <= 20251231\nGROUP BY d.category\nORDER BY SUM(f.order_amount) ASC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c05",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT dp.category\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20251101 AND dd.date_id <= 20251130\nGROUP BY dp.category\nORDER BY SUM(fo.order_amount) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c06",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT dc.customer_name\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dc.customer_name\nORDER BY SUM(fo.order_amount) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c07",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT d.province\nFROM fact_order f\nJOIN dim_region d ON f.region_id = d.region_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.year = 2025 AND dt.quarter = 'Q4'\nGROUP BY d.province\nORDER BY SUM(f.order_amount) DESC\nLIMIT 2",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c08",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT SUM(t2.order_amount) AS sales_amount\nFROM fact_order t2\nJOIN dim_region t1 ON t2.region_id = t1.region_id\nJOIN dim_date t3 ON t2.date_id = t3.date_id\nWHERE t1.region_name = '华东' AND t3.date_id BETWEEN 20250101 AND 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d01",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT SUM(t2.order_amount) AS sales_amount\nFROM dim_product t1\nJOIN fact_order t2 ON t1.product_id = t2.product_id\nJOIN dim_date t3 ON t2.date_id = t3.date_id\nWHERE t1.brand = '苹果' AND t3.date_id >= 20250101 AND t3.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d02",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT SUM(t2.order_quantity) AS total_quantity\nFROM dim_product t1\nJOIN fact_order t2 ON t1.product_id = t2.product_id\nJOIN dim_date t3 ON t2.date_id = t3.date_id\nWHERE t1.category = '手机数码' AND t3.date_id >= 20250101 AND t3.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d03",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT COUNT(*) AS order_count\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nWHERE dc.member_level = '铂金' AND fo.date_id >= 20250101 AND fo.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d04",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT SUM(t1.order_amount) AS `销售额`\nFROM fact_order t1\nJOIN dim_date t2 ON t1.date_id = t2.date_id\nJOIN dim_region t3 ON t1.region_id = t3.region_id\nWHERE t3.province = '广东省'\n  AND t2.year = 2025\n  AND t2.quarter = 'Q4'",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d05",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT SUM(t2.order_amount) AS consumption_amount\nFROM dim_customer t1\nJOIN fact_order t2 ON t1.customer_id = t2.customer_id\nJOIN dim_region t3 ON t2.region_id = t3.region_id\nJOIN dim_date t4 ON t2.date_id = t4.date_id\nWHERE t1.gender = '女' \n  AND t3.region_name = '华东'\n  AND t4.date_id >= 20250101 \n  AND t4.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d06",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT \n    dr.region_name AS 地区,\n    SUM(fo.order_amount) AS 销售额\nFROM \n    fact_order fo\nJOIN \n    dim_region dr ON fo.region_id = dr.region_id\nJOIN \n    dim_date dd ON fo.date_id = dd.date_id\nWHERE \n    dd.quarter = 'Q4' \n    AND dd.date_id BETWEEN 20251001 AND 20251231\nGROUP BY \n    dr.region_name",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d07",
+        "level": "D",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n    d.year AS year,\n    d.month AS month,\n    SUM(f.order_amount) AS sales_amount\nFROM fact_order f\nJOIN dim_product p ON f.product_id = p.product_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE p.category = '食品饮料' \n    AND d.year = 2025\nGROUP BY d.year, d.month\nORDER BY d.year, d.month",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "d08",
+        "level": "D",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  CASE \n    WHEN d.date_id >= 20240101 AND d.date_id <= 20241231 THEN '2024'\n    WHEN d.date_id >= 20250101 AND d.date_id <= 20251231 THEN '2025'\n  END AS year,\n  SUM(f.order_amount) AS 销售额\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id BETWEEN 20240101 AND 20251231\nGROUP BY \n  CASE \n    WHEN d.date_id >= 20240101 AND d.date_id <= 20241231 THEN '2024'\n    WHEN d.date_id >= 20250101 AND d.date_id <= 20251231 THEN '2025'\n  END",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e01",
+        "level": "E",
+        "kind": "compare"
+      },
+      {
+        "sql": "SELECT SUM(order_amount) AS total_sales\nFROM fact_order fo\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20251101 AND dd.date_id <= 20251130",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e02",
+        "level": "E",
+        "kind": "time_filter"
+      },
+      {
+        "sql": "SELECT SUM(t2.order_amount) AS GMV\nFROM dim_date t1\nJOIN fact_order t2 ON t1.date_id = t2.date_id\nWHERE t1.year = 2025",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e03",
+        "level": "E",
+        "kind": "metric"
+      },
+      {
+        "sql": "SELECT d.category, AVG(f.order_amount) AS avg_order_amount\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.date_id >= 20250101 AND dt.date_id <= 20251231\nGROUP BY d.category",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e04",
+        "level": "E",
+        "kind": "metric"
+      },
+      {
+        "sql": "SELECT SUM(order_amount) AS sales_amount\nFROM fact_order fo\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250701 AND dd.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e05",
+        "level": "E",
+        "kind": "time_filter"
+      },
+      {
+        "sql": "SELECT \n    p.brand AS 品牌,\n    SUM(f.order_amount) AS 销售额\nFROM fact_order f\nJOIN dim_product p ON f.product_id = p.product_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id >= 20251201 AND d.date_id <= 20251231\nGROUP BY p.brand\nORDER BY 销售额 DESC",
+        "ex": 1,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "",
+        "qid": "e06",
+        "level": "E",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT p.category\nFROM fact_order f\nJOIN dim_product p ON f.product_id = p.product_id\nWHERE f.date_id >= 20250101 AND f.date_id <= 20251231\nGROUP BY p.category\nHAVING SUM(f.order_amount) > 500000",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e07",
+        "level": "E",
+        "kind": "having"
+      },
+      {
+        "sql": "SELECT \n  SUM(CASE WHEN d.quarter = 'Q3' THEN f.order_amount ELSE 0 END) AS q3_sales,\n  SUM(CASE WHEN d.quarter = 'Q4' THEN f.order_amount ELSE 0 END) AS q4_sales\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id BETWEEN 20250701 AND 20251231\n  AND d.quarter IN ('Q3', 'Q4')",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "e08",
+        "level": "E",
+        "kind": "compare"
+      },
+      {
+        "sql": "SELECT \n  p.category AS 品类,\n  SUM(f.order_amount) AS 销售额\nFROM fact_order f\nJOIN dim_product p ON f.product_id = p.product_id\nJOIN dim_region r ON f.region_id = r.region_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE r.region_name = '华东' \n  AND d.date_id >= 20250101 \n  AND d.date_id <= 20251231\nGROUP BY p.category",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f01",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  t1.category AS 品类,\n  t1.brand AS 品牌,\n  t1.total_sales AS 销售额\nFROM (\n  SELECT \n    dp.category,\n    dp.brand,\n    SUM(fo.order_amount) AS total_sales,\n    ROW_NUMBER() OVER (PARTITION BY dp.category ORDER BY SUM(fo.order_amount) DESC) AS rn\n  FROM fact_order fo\n  JOIN dim_product dp ON fo.product_id = dp.product_id\n  JOIN dim_date dd ON fo.date_id = dd.date_id\n  WHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\n  GROUP BY dp.category, dp.brand\n) t1\nWHERE t1.rn = 1",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "f02",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  d.date_id,\n  dp.brand,\n  SUM(fo.order_quantity) AS销量\nFROM fact_order fo\nJOIN dim_date d ON fo.date_id = d.date_id\nJOIN dim_product dp ON fo.product_id = dp.product_id\nWHERE d.date_id >= 20250101 AND d.date_id <= 20251231\nGROUP BY d.quarter, dp.brand\nORDER BY d.quarter, dp.brand",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 0,
+        "reason": "链路执行异常：OperationalError",
+        "qid": "f03",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  r.region_name AS 地区,\n  SUM(f.order_amount) AS 消费金额\nFROM fact_order f\nJOIN dim_customer c ON f.customer_id = c.customer_id\nJOIN dim_region r ON f.region_id = r.region_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE c.member_level = '铂金' \n  AND d.date_id >= 20250101 \n  AND d.date_id <= 20251231\nGROUP BY r.region_name",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f04",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  p.category,\n  SUM(f.order_quantity) AS销量\nFROM fact_order f\nJOIN dim_product p ON f.product_id = p.product_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id >= 20250101 AND d.date_id <= 20251231\nGROUP BY p.category\nORDER BY SUM(f.order_amount) DESC\nLIMIT 3",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f05",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT SUM(t1.order_amount) AS sales_amount\nFROM fact_order t1\nJOIN dim_region t2 ON t1.region_id = t2.region_id\nJOIN dim_customer t3 ON t1.customer_id = t3.customer_id\nJOIN dim_product t4 ON t1.product_id = t4.product_id\nJOIN dim_date t5 ON t1.date_id = t5.date_id\nWHERE t2.region_name = '华南'\n  AND t3.gender = '女'\n  AND t4.category = '手机数码'\n  AND t5.date_id >= 20250101\n  AND t5.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f06",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT dc.member_level, AVG(fo.order_amount) AS avg_order_amount\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nWHERE fo.date_id >= 20250101 AND fo.date_id <= 20251231\nGROUP BY dc.member_level",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f07",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  d.year AS 年,\n  d.month AS 月,\n  SUM(f.order_amount) AS 销售额,\n  ROUND(\n    (SUM(f.order_amount) - LAG(SUM(f.order_amount)) OVER (ORDER BY d.year, d.month)) / \n    NULLIF(LAG(SUM(f.order_amount)) OVER (ORDER BY d.year, d.month), 0) * 100, 2\n  ) AS 比上月增长率\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.year = 2025\nGROUP BY d.year, d.month\nORDER BY d.year, d.month",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "f08",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  p.brand AS 品牌,\n  SUM(f.order_amount) AS 销售额,\n  ROUND(SUM(f.order_amount) / (SELECT SUM(order_amount) FROM fact_order f2 JOIN dim_date d2 ON f2.date_id = d2.date_id WHERE d2.year = 2025) * 100, 2) AS 占比\nFROM fact_order f\nJOIN dim_product p ON f.product_id = p.product_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.year = 2025\nGROUP BY p.brand\nORDER BY 销售额 DESC",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "f09",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  dr.province AS 省份,\n  SUM(fo.order_amount) / SUM(fo.order_quantity) AS 客单价\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025\nGROUP BY dr.province",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "f10",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT dc.customer_name\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025\nGROUP BY dc.customer_name\nORDER BY COUNT(*) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f11",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  dr.region_name AS 地区,\n  dc.member_level AS 会员等级,\n  COUNT(*) AS 订单数\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dr.region_name, dc.member_level\nORDER BY dr.region_name, dc.member_level",
+        "ex": 1,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "",
+        "qid": "f12",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT COUNT(DISTINCT t2.customer_id) \nFROM fact_order t1 \nJOIN dim_product t2 ON t1.product_id = t2.product_id \nJOIN dim_date t3 ON t1.date_id = t3.date_id \nWHERE t2.category = '手机数码' \n  AND t3.date_id >= 20250101 \n  AND t3.date_id <= 20251231",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 0,
+        "reason": "链路执行异常：OperationalError",
+        "qid": "f13",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  YEAR(d.date_id) AS year,\n  MONTH(d.date_id) AS month,\n  SUM(f.order_amount) AS cumulative_sales\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id >= 20250101 AND d.date_id <= 20251231\nGROUP BY YEAR(d.date_id), MONTH(d.date_id)\nORDER BY year, month",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "f14",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  dr.province AS 省份,\n  SUM(fo.order_quantity) AS 销量\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dp.category = '家用电器' \n  AND dd.year = 2025\nGROUP BY dr.province",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f15",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT d.brand\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.date_id BETWEEN 20250101 AND 20251231\nGROUP BY d.brand\nORDER BY SUM(f.order_amount) / SUM(f.order_quantity) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f16",
+        "level": "F",
+        "kind": "advanced"
+      }
+    ],
+    "llm_filter": [
+      {
+        "sql": "SELECT SUM(order_amount) AS total_sales FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a01",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT COUNT(*) AS order_count FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a02",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT SUM(order_quantity) AS total_quantity FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a03",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT AVG(order_amount) AS AOV FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a04",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT MAX(order_amount) AS max_order_amount FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a05",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT COUNT(DISTINCT customer_id) AS customer_count FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a06",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT dr.province, SUM(fo.order_amount) AS sales_amount\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025\nGROUP BY dr.province",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b01",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  dr.region_name AS 地区,\n  SUM(fo.order_amount) AS 销售额\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dr.region_name",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b02",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT d.category AS 品类, SUM(f.order_amount) AS 销售额\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.date_id >= 20250101 AND dt.date_id <= 20251231\nGROUP BY d.category",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b03",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  p.brand AS 品牌,\n  SUM(f.order_amount) AS 销售额\nFROM fact_order f\nJOIN dim_product p ON f.product_id = p.product_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id >= 20250101 AND d.date_id <= 20251231\nGROUP BY p.brand",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b04",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT d.quarter, SUM(f.order_amount) AS sales_amount\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.year * 10000 + d.month * 100 + d.day\nWHERE d.year = 2025\nGROUP BY d.quarter\nORDER BY d.quarter",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b05",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  d.month AS 月份,\n  COUNT(f.order_id) AS 订单量\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.year = 2025\nGROUP BY d.month\nORDER BY d.month",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b06",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT dc.member_level AS 会员等级, SUM(fo.order_amount) AS 销售额\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nWHERE fo.date_id >= 20250101 AND fo.date_id <= 20251231\nGROUP BY dc.member_level",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b07",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  dc.gender AS 性别,\n  SUM(fo.order_amount) AS 消费金额\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nWHERE fo.date_id >= 20250101 AND fo.date_id <= 20251231\nGROUP BY dc.gender",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b08",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT dr.region_name AS 地区, SUM(fo.order_quantity) AS 销量\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dr.region_name",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b09",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT d.category, SUM(f.order_quantity) AS销量\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.date_id >= 20250101 AND dt.date_id <= 20251231\nGROUP BY d.category",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b10",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT d.category\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.date_id BETWEEN 20250101 AND 20251231\nGROUP BY d.category\nORDER BY SUM(f.order_amount) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c01",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT d.brand\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.date_id >= 20250101 AND dt.date_id <= 20251231\nGROUP BY d.brand\nORDER BY SUM(f.order_amount) DESC\nLIMIT 3",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c02",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT dp.product_name\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dp.product_name\nORDER BY SUM(fo.order_quantity) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c03",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT dr.region_name\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dr.region_name\nORDER BY SUM(fo.order_amount) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c04",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT d.category\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.date_id >= 20250101 AND dt.date_id <= 20251231\nGROUP BY d.category\nORDER BY SUM(f.order_amount) ASC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c05",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT dp.category\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id BETWEEN 20251101 AND 20251130\nGROUP BY dp.category\nORDER BY SUM(fo.order_amount) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c06",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT dc.customer_name\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dc.customer_name\nORDER BY SUM(fo.order_amount) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c07",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT dr.province\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025 AND dd.quarter = 'Q4'\nGROUP BY dr.province\nORDER BY SUM(fo.order_amount) DESC\nLIMIT 2",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c08",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT SUM(t1.order_amount) AS sales_amount\nFROM fact_order t1\nJOIN dim_region t2 ON t1.region_id = t2.region_id\nJOIN dim_date t3 ON t1.date_id = t3.date_id\nWHERE t2.region_name = '华东' AND t3.date_id BETWEEN 20250101 AND 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d01",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT SUM(t2.order_amount) AS sales_amount\nFROM dim_product t1\nJOIN fact_order t2 ON t1.product_id = t2.product_id\nJOIN dim_date t3 ON t2.date_id = t3.date_id\nWHERE t1.brand = '苹果' \n  AND t3.date_id >= 20250101 \n  AND t3.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d02",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT SUM(t2.order_quantity) AS total_quantity\nFROM dim_product t1\nJOIN fact_order t2 ON t1.product_id = t2.product_id\nJOIN dim_date t3 ON t2.date_id = t3.date_id\nWHERE t1.category = '手机数码'\n  AND t3.date_id >= 20250101\n  AND t3.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d03",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT COUNT(*) AS order_count\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nWHERE dc.member_level = '铂金' AND fo.date_id >= 20250101 AND fo.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d04",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT SUM(t1.order_amount) AS sales_amount\nFROM fact_order t1\nJOIN dim_region t2 ON t1.region_id = t2.region_id\nJOIN dim_date t3 ON t1.date_id = t3.date_id\nWHERE t2.province = '广东省'\n  AND t3.year = 2025\n  AND t3.quarter = 'Q4'",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d05",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT SUM(t2.order_amount) AS amount\nFROM dim_customer t1\nJOIN fact_order t2 ON t1.customer_id = t2.customer_id\nJOIN dim_region t3 ON t2.region_id = t3.region_id\nJOIN dim_date t4 ON t2.date_id = t4.date_id\nWHERE t1.gender = '女' \n  AND t3.region_name = '华东'\n  AND t4.date_id >= 20250101 \n  AND t4.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d06",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT \n  dr.region_name AS 地区,\n  SUM(fo.order_amount) AS 销售额\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.quarter = 'Q4' \n  AND dd.date_id BETWEEN 20251001 AND 20251231\nGROUP BY dr.region_name",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d07",
+        "level": "D",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  YEAR(d.date_id) AS year,\n  MONTH(d.date_id) AS month,\n  SUM(f.order_amount) AS sales_amount\nFROM fact_order f\nJOIN dim_product p ON f.product_id = p.product_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE p.category = '食品饮料' \n  AND d.date_id >= 20250101 \n  AND d.date_id <= 20251231\nGROUP BY YEAR(d.date_id), MONTH(d.date_id)\nORDER BY year, month",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "d08",
+        "level": "D",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  CASE \n    WHEN d.date_id >= 20240101 AND d.date_id <= 20241231 THEN '2024'\n    WHEN d.date_id >= 20250101 AND d.date_id <= 20251231 THEN '2025'\n  END AS year,\n  SUM(f.order_amount) AS sales_amount\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id BETWEEN 20240101 AND 20251231\n  AND CASE \n        WHEN d.date_id >= 20240101 AND d.date_id <= 20241231 THEN 1\n        WHEN d.date_id >= 20250101 AND d.date_id <= 20251231 THEN 1\n        ELSE 0\n      END = 1\nGROUP BY \n  CASE \n    WHEN d.date_id >= 20240101 AND d.date_id <= 20241231 THEN '2024'\n    WHEN d.date_id >= 20250101 AND d.date_id <= 20251231 THEN '2025'\n  END",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e01",
+        "level": "E",
+        "kind": "compare"
+      },
+      {
+        "sql": "SELECT SUM(t1.order_amount) AS total_sales\nFROM fact_order t1\nJOIN dim_date t2 ON t1.date_id = t2.date_id\nWHERE t2.date_id >= 20251101 AND t2.date_id <= 20251130",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e02",
+        "level": "E",
+        "kind": "time_filter"
+      },
+      {
+        "sql": "SELECT SUM(t1.order_amount) AS GMV\nFROM fact_order t1\nJOIN dim_date t2 ON t1.date_id = t2.date_id\nWHERE t2.date_id >= 20250101 AND t2.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e03",
+        "level": "E",
+        "kind": "metric"
+      },
+      {
+        "sql": "SELECT d.category, AVG(f.order_amount) AS avg_order_amount\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.date_id >= 20250101 AND dt.date_id <= 20251231\nGROUP BY d.category",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e04",
+        "level": "E",
+        "kind": "metric"
+      },
+      {
+        "sql": "SELECT SUM(t1.order_amount) AS sales_amount\nFROM fact_order t1\nJOIN dim_date t2 ON t1.date_id = t2.date_id\nWHERE t2.date_id >= 20250701 AND t2.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e05",
+        "level": "E",
+        "kind": "time_filter"
+      },
+      {
+        "sql": "SELECT d.brand AS brand, SUM(f.order_amount) AS sales_amount\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.date_id >= 20251201 AND dt.date_id <= 20251231\nGROUP BY d.brand",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e06",
+        "level": "E",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT dp.category\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dp.category\nHAVING SUM(fo.order_amount) > 500000",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e07",
+        "level": "E",
+        "kind": "having"
+      },
+      {
+        "sql": "SELECT \n  d.quarter AS 季度,\n  SUM(f.order_amount) AS 销售额\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id BETWEEN 20250701 AND 20251231\n  AND d.quarter IN ('Q3', 'Q4')\nGROUP BY d.quarter\nORDER BY d.quarter",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e08",
+        "level": "E",
+        "kind": "compare"
+      },
+      {
+        "sql": "SELECT \n    p.category AS 品类,\n    SUM(f.order_amount) AS 销售额\nFROM fact_order f\nJOIN dim_region r ON f.region_id = r.region_id\nJOIN dim_product p ON f.product_id = p.product_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE r.region_name = '华东' \n    AND d.date_id >= 20250101 \n    AND d.date_id <= 20251231\nGROUP BY p.category",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f01",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  t1.category AS 品类,\n  t1.brand AS 品牌,\n  t1.total_amount AS 销售额\nFROM (\n  SELECT \n    dp.category,\n    dp.brand,\n    SUM(fo.order_amount) AS total_amount,\n    ROW_NUMBER() OVER (PARTITION BY dp.category ORDER BY SUM(fo.order_amount) DESC) AS rn\n  FROM fact_order fo\n  JOIN dim_product dp ON fo.product_id = dp.product_id\n  JOIN dim_date dd ON fo.date_id = dd.date_id\n  WHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\n  GROUP BY dp.category, dp.brand\n) t1\nWHERE t1.rn = 1",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "f02",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n    d.quarter AS 季度,\n    p.brand AS 品牌,\n    SUM(f.order_quantity) AS 销量\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nJOIN dim_product p ON f.product_id = p.product_id\nWHERE d.date_id >= 20250101 AND d.date_id <= 20251231\nGROUP BY d.quarter, p.brand\nORDER BY d.quarter, p.brand",
+        "ex": 1,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "",
+        "qid": "f03",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  r.region_name AS 地区,\n  SUM(f.order_amount) AS 消费金额\nFROM fact_order f\nJOIN dim_customer c ON f.customer_id = c.customer_id\nJOIN dim_region r ON f.region_id = r.region_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE c.member_level = '铂金' \n  AND d.date_id >= 20250101 \n  AND d.date_id <= 20251231\nGROUP BY r.region_name",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f04",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  dp.category,\n  SUM(fo.order_quantity) AS total_quantity\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id BETWEEN 20250101 AND 20251231\nGROUP BY dp.category\nORDER BY SUM(fo.order_amount) DESC\nLIMIT 3",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f05",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT SUM(t1.order_amount) AS sales_amount\nFROM fact_order t1\nJOIN dim_region t2 ON t1.region_id = t2.region_id\nJOIN dim_customer t3 ON t1.customer_id = t3.customer_id\nJOIN dim_product t4 ON t1.product_id = t4.product_id\nJOIN dim_date t5 ON t1.date_id = t5.date_id\nWHERE t2.region_name = '华南'\n  AND t3.gender = '女'\n  AND t4.category = '手机数码'\n  AND t5.date_id >= 20250101\n  AND t5.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f06",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT dc.member_level, AVG(fo.order_amount) AS avg_order_amount\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nWHERE fo.date_id >= 20250101 AND fo.date_id <= 20251231\nGROUP BY dc.member_level",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f07",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  d1.month AS 月,\n  SUM(f1.order_amount) AS 销售额,\n  ROUND(\n    (SUM(f1.order_amount) - LAG(SUM(f1.order_amount)) OVER (ORDER BY d1.month)) / \n    NULLIF(LAG(SUM(f1.order_amount)) OVER (ORDER BY d1.month), 0) * 100, 2\n  ) AS 比上月增长率\nFROM fact_order f1\nJOIN dim_date d1 ON f1.date_id = d1.date_id\nWHERE d1.year = 2025\nGROUP BY d1.month\nORDER BY d1.month",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "f08",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  dp.brand AS 品牌,\n  SUM(fo.order_amount) / (SELECT SUM(order_amount) FROM fact_order fo2 JOIN dim_date dd2 ON fo2.date_id = dd2.date_id WHERE dd2.year = 2025) AS 比例\nFROM fact_order fo\nJOIN dim_date dd ON fo.date_id = dd.date_id\nJOIN dim_product dp ON fo.product_id = dp.product_id\nWHERE dd.year = 2025\nGROUP BY dp.brand\nORDER BY 比例 DESC",
+        "ex": 1,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "",
+        "qid": "f09",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  dr.province AS 省份,\n  SUM(fo.order_amount) / COUNT(*) AS 客单价\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025\nGROUP BY dr.province",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f10",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT dc.customer_name\nFROM fact_order fo\nJOIN dim_date dd ON fo.date_id = dd.date_id\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nWHERE dd.year = 2025\nGROUP BY dc.customer_name\nORDER BY COUNT(*) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f11",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n    r.region_name AS 地区,\n    c.member_level AS 会员等级,\n    COUNT(f.order_id) AS 订单数\nFROM fact_order f\nJOIN dim_region r ON f.region_id = r.region_id\nJOIN dim_customer c ON f.customer_id = c.customer_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id >= 20250101 AND d.date_id <= 20251231\nGROUP BY r.region_name, c.member_level\nORDER BY r.region_name, c.member_level",
+        "ex": 1,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "",
+        "qid": "f12",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT COUNT(DISTINCT t1.customer_id) AS customer_count\nFROM fact_order t1\nJOIN dim_product t2 ON t1.product_id = t2.product_id\nJOIN dim_date t3 ON t1.date_id = t3.date_id\nWHERE t2.category = '手机数码'\n  AND t3.date_id >= 20250101\n  AND t3.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f13",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  YEAR(STR_TO_DATE(CAST(d.date_id AS CHAR), '%Y%m%d')) AS year,\n  MONTH(STR_TO_DATE(CAST(d.date_id AS CHAR), '%Y%m%d')) AS month,\n  SUM(f.order_amount) AS cumulative_sales\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE YEAR(STR_TO_DATE(CAST(d.date_id AS CHAR), '%Y%m%d')) = 2025\nGROUP BY YEAR(STR_TO_DATE(CAST(d.date_id AS CHAR), '%Y%m%d')), MONTH(STR_TO_DATE(CAST(d.date_id AS CHAR), '%Y%m%d'))\nORDER BY year, month",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "f14",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n    dr.province AS 省份,\n    SUM(fo.order_quantity) AS 销量\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dp.category = '家用电器' \n    AND dd.year = 2025\nGROUP BY dr.province",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f15",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT d.brand\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.year = 2025\nGROUP BY d.brand\nORDER BY AVG(f.order_amount) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f16",
+        "level": "F",
+        "kind": "advanced"
+      }
+    ],
+    "full": [
+      {
+        "sql": "SELECT SUM(order_amount) AS total_sales FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a01",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT COUNT(*) AS order_count FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a02",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT SUM(order_quantity) AS total_quantity FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a03",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT AVG(order_amount) AS AOV FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a04",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT MAX(order_amount) FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a05",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT COUNT(DISTINCT customer_id) AS customer_count FROM fact_order",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "a06",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT \n  dr.province AS 省份,\n  SUM(fo.order_amount) AS 销售额\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025\nGROUP BY dr.province",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b01",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  dr.region_name AS 地区,\n  SUM(fo.order_amount) AS 销售额\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dr.region_name",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b02",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT d.category AS 品类, SUM(f.order_amount) AS 销售额\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.date_id >= 20250101 AND dt.date_id <= 20251231\nGROUP BY d.category",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b03",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  p.brand AS 品牌,\n  SUM(f.order_amount) AS 销售额\nFROM fact_order f\nJOIN dim_product p ON f.product_id = p.product_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id >= 20250101 AND d.date_id <= 20251231\nGROUP BY p.brand\nORDER BY 销售额 DESC",
+        "ex": 1,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "",
+        "qid": "b04",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT d.quarter AS 季度, SUM(f.order_amount) AS 销售额\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.year * 10000 + d.month * 100 + d.day\nWHERE d.year = 2025\nGROUP BY d.quarter\nORDER BY d.quarter",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b05",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  YEAR(STR_TO_DATE(CAST(d.date_id AS CHAR), '%Y%m%d')) AS year,\n  MONTH(STR_TO_DATE(CAST(d.date_id AS CHAR), '%Y%m%d')) AS month,\n  COUNT(f.order_id) AS order_count\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE YEAR(STR_TO_DATE(CAST(d.date_id AS CHAR), '%Y%m%d')) = 2025\nGROUP BY \n  YEAR(STR_TO_DATE(CAST(d.date_id AS CHAR), '%Y%m%d')),\n  MONTH(STR_TO_DATE(CAST(d.date_id AS CHAR), '%Y%m%d'))\nORDER BY month",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "b06",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT dc.member_level, SUM(fo.order_amount) AS sales_amount\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dc.member_level",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b07",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  dc.gender AS 性别,\n  SUM(fo.order_amount) AS 消费金额\nFROM dim_customer dc\nJOIN fact_order fo ON dc.customer_id = fo.customer_id\nWHERE fo.date_id >= 20250101 AND fo.date_id <= 20251231\nGROUP BY dc.gender",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b08",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT dr.region_name AS 地区, SUM(fo.order_quantity) AS 销量\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dr.region_name",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b09",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT dp.category, SUM(fo.order_quantity) AS销量\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dp.category",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "b10",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT d.category\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.date_id >= 20250101 AND dt.date_id <= 20251231\nGROUP BY d.category\nORDER BY SUM(f.order_amount) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c01",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT d.brand\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.date_id >= 20250101 AND dt.date_id <= 20251231\nGROUP BY d.brand\nORDER BY SUM(f.order_amount) DESC\nLIMIT 3",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c02",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT dp.product_name\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dp.product_name\nORDER BY SUM(fo.order_quantity) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c03",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT dr.region_name\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dr.region_name\nORDER BY SUM(fo.order_amount) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c04",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT category\nFROM dim_product dp\nJOIN fact_order fo ON dp.product_id = fo.product_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY category\nORDER BY SUM(fo.order_amount) ASC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c05",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT dp.category\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20251101 AND dd.date_id <= 20251130\nGROUP BY dp.category\nORDER BY SUM(fo.order_amount) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c06",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT dc.customer_name\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dc.customer_name\nORDER BY SUM(fo.order_amount) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c07",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT \n  dr.province\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025 AND dd.quarter = 'Q4'\nGROUP BY dr.province\nORDER BY SUM(fo.order_amount) DESC\nLIMIT 2",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "c08",
+        "level": "C",
+        "kind": "topn"
+      },
+      {
+        "sql": "SELECT SUM(t1.order_amount) AS GMV\nFROM fact_order t1\nJOIN dim_region t2 ON t1.region_id = t2.region_id\nJOIN dim_date t3 ON t1.date_id = t3.date_id\nWHERE t2.region_name = '华东' AND t3.date_id BETWEEN 20250101 AND 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d01",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT SUM(t2.order_amount) AS GMV\nFROM dim_product t1\nJOIN fact_order t2 ON t1.product_id = t2.product_id\nJOIN dim_date t3 ON t2.date_id = t3.date_id\nWHERE t1.brand = '苹果' AND t3.date_id >= 20250101 AND t3.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d02",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT SUM(t2.order_quantity) AS total_quantity\nFROM dim_product t1\nJOIN fact_order t2 ON t1.product_id = t2.product_id\nJOIN dim_date t3 ON t2.date_id = t3.date_id\nWHERE t1.category = '手机数码'\n  AND t3.date_id >= 20250101\n  AND t3.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d03",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT COUNT(*) AS order_count\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nWHERE dc.member_level = '铂金' AND fo.date_id >= 20250101 AND fo.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d04",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT SUM(t1.order_amount) AS sales_amount\nFROM fact_order t1\nJOIN dim_date t2 ON t1.date_id = t2.date_id\nJOIN dim_region t3 ON t1.region_id = t3.region_id\nWHERE t3.province = '广东省' AND t2.year = 2025 AND t2.quarter = 'Q4'",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d05",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT SUM(t2.order_amount) AS amount\nFROM dim_customer t1\nJOIN fact_order t2 ON t1.customer_id = t2.customer_id\nJOIN dim_region t3 ON t2.region_id = t3.region_id\nJOIN dim_date t4 ON t2.date_id = t4.date_id\nWHERE t1.gender = '女' \n  AND t3.region_name = '华东'\n  AND t4.date_id >= 20250101 \n  AND t4.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d06",
+        "level": "D",
+        "kind": "value_filter"
+      },
+      {
+        "sql": "SELECT \n  dr.region_name AS 地区,\n  SUM(fo.order_amount) AS 销售额\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.quarter = 'Q4' \n  AND dd.date_id BETWEEN 20251001 AND 20251231\nGROUP BY dr.region_name",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "d07",
+        "level": "D",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  YEAR(d.date_id) AS year,\n  MONTH(d.date_id) AS month,\n  SUM(f.order_amount) AS sales_amount\nFROM fact_order f\nJOIN dim_product p ON f.product_id = p.product_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE p.category = '食品饮料' \n  AND d.date_id >= 20250101 \n  AND d.date_id <= 20251231\nGROUP BY YEAR(d.date_id), MONTH(d.date_id)\nORDER BY year, month",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "d08",
+        "level": "D",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  CASE \n    WHEN d.date_id >= 20240101 AND d.date_id <= 20241231 THEN '2024'\n    WHEN d.date_id >= 20250101 AND d.date_id <= 20251231 THEN '2025'\n  END AS year,\n  SUM(f.order_amount) AS sales_amount\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id BETWEEN 20240101 AND 20251231\n  AND CASE \n        WHEN d.date_id >= 20240101 AND d.date_id <= 20241231 THEN 1\n        WHEN d.date_id >= 20250101 AND d.date_id <= 20251231 THEN 1\n        ELSE 0\n      END = 1\nGROUP BY \n  CASE \n    WHEN d.date_id >= 20240101 AND d.date_id <= 20241231 THEN '2024'\n    WHEN d.date_id >= 20250101 AND d.date_id <= 20251231 THEN '2025'\n  END",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e01",
+        "level": "E",
+        "kind": "compare"
+      },
+      {
+        "sql": "SELECT SUM(t1.order_amount) AS total_sales\nFROM fact_order t1\nJOIN dim_date t2 ON t1.date_id = t2.date_id\nWHERE t2.date_id >= 20251101 AND t2.date_id <= 20251130",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e02",
+        "level": "E",
+        "kind": "time_filter"
+      },
+      {
+        "sql": "SELECT SUM(t1.order_amount) AS GMV\nFROM fact_order t1\nJOIN dim_date t2 ON t1.date_id = t2.date_id\nWHERE t2.date_id >= 20250101 AND t2.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e03",
+        "level": "E",
+        "kind": "metric"
+      },
+      {
+        "sql": "SELECT d.category AS 品类, AVG(f.order_amount) AS 平均订单金额\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.date_id >= 20250101 AND dt.date_id <= 20251231\nGROUP BY d.category",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e04",
+        "level": "E",
+        "kind": "metric"
+      },
+      {
+        "sql": "SELECT SUM(t1.order_amount) AS sales_amount\nFROM fact_order t1\nJOIN dim_date t2 ON t1.date_id = t2.date_id\nWHERE t2.date_id >= 20250701 AND t2.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e05",
+        "level": "E",
+        "kind": "time_filter"
+      },
+      {
+        "sql": "SELECT \n  p.brand AS 品牌,\n  SUM(f.order_amount) AS 销售额\nFROM fact_order f\nJOIN dim_product p ON f.product_id = p.product_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id >= 20251201 AND d.date_id <= 20251231\nGROUP BY p.brand\nORDER BY 销售额 DESC",
+        "ex": 1,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "",
+        "qid": "e06",
+        "level": "E",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT dp.category\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\nGROUP BY dp.category\nHAVING SUM(fo.order_amount) > 500000",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e07",
+        "level": "E",
+        "kind": "having"
+      },
+      {
+        "sql": "SELECT \n  d.quarter,\n  SUM(f.order_amount) AS sales_amount\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id BETWEEN 20250701 AND 20251231\n  AND d.quarter IN ('Q3', 'Q4')\nGROUP BY d.quarter\nORDER BY d.quarter",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "e08",
+        "level": "E",
+        "kind": "compare"
+      },
+      {
+        "sql": "SELECT \n    p.category AS 品类,\n    SUM(f.order_amount) AS 销售额\nFROM fact_order f\nJOIN dim_region r ON f.region_id = r.region_id\nJOIN dim_product p ON f.product_id = p.product_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE r.region_name = '华东' \n    AND d.date_id >= 20250101 \n    AND d.date_id <= 20251231\nGROUP BY p.category",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f01",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  t1.category AS 品类,\n  t1.brand AS 品牌,\n  t1.total_amount AS 销售额\nFROM (\n  SELECT \n    dp.category,\n    dp.brand,\n    SUM(fo.order_amount) AS total_amount,\n    ROW_NUMBER() OVER (PARTITION BY dp.category ORDER BY SUM(fo.order_amount) DESC) AS rn\n  FROM fact_order fo\n  JOIN dim_product dp ON fo.product_id = dp.product_id\n  JOIN dim_date dd ON fo.date_id = dd.date_id\n  WHERE dd.date_id >= 20250101 AND dd.date_id <= 20251231\n  GROUP BY dp.category, dp.brand\n) t1\nWHERE t1.rn = 1",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "f02",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n    d.quarter AS 季度,\n    p.brand AS 品牌,\n    SUM(f.order_quantity) AS 销量\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nJOIN dim_product p ON f.product_id = p.product_id\nWHERE d.date_id >= 20250101 AND d.date_id <= 20251231\nGROUP BY d.quarter, p.brand\nORDER BY d.quarter, p.brand",
+        "ex": 1,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "",
+        "qid": "f03",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  r.region_name AS 地区,\n  SUM(f.order_amount) AS 消费金额\nFROM fact_order f\nJOIN dim_customer c ON f.customer_id = c.customer_id\nJOIN dim_region r ON f.region_id = r.region_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE c.member_level = '铂金' \n  AND d.date_id >= 20250101 \n  AND d.date_id <= 20251231\nGROUP BY r.region_name",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f04",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  dp.category,\n  SUM(fo.order_quantity) AS total_quantity\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.date_id BETWEEN 20250101 AND 20251231\nGROUP BY dp.category\nORDER BY SUM(fo.order_amount) DESC\nLIMIT 3",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f05",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT SUM(t1.order_amount) AS sales_amount\nFROM fact_order t1\nJOIN dim_region t2 ON t1.region_id = t2.region_id\nJOIN dim_customer t3 ON t1.customer_id = t3.customer_id\nJOIN dim_product t4 ON t1.product_id = t4.product_id\nJOIN dim_date t5 ON t1.date_id = t5.date_id\nWHERE t2.region_name = '华南'\n  AND t3.gender = '女'\n  AND t4.category = '手机数码'\n  AND t5.date_id >= 20250101\n  AND t5.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f06",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT dc.member_level, AVG(fo.order_amount) AS avg_order_amount\nFROM fact_order fo\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nWHERE fo.date_id >= 20250101 AND fo.date_id <= 20251231\nGROUP BY dc.member_level",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f07",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  d1.month AS 月,\n  SUM(f1.order_amount) AS 当月销售额,\n  COALESCE(SUM(f2.order_amount), 0) AS 上月销售额,\n  ROUND(SUM(f1.order_amount) - COALESCE(SUM(f2.order_amount), 0), 2) AS 较上月增长额\nFROM dim_date d1\nJOIN fact_order f1 ON d1.date_id = f1.date_id\nLEFT JOIN dim_date d2 ON d1.year = d2.year AND d1.month = d2.month + 1\n  OR (d1.year = d2.year + 1 AND d1.month = 1 AND d2.month = 12)\nLEFT JOIN fact_order f2 ON d2.date_id = f2.date_id\nWHERE d1.year = 2025\nGROUP BY d1.month, d1.year\nORDER BY d1.month",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "f08",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  dp.brand AS 品牌,\n  SUM(fo.order_amount) AS 销售额,\n  ROUND(SUM(fo.order_amount) / (SELECT SUM(order_amount) FROM fact_order fo2 JOIN dim_date dd2 ON fo2.date_id = dd2.date_id WHERE dd2.year = 2025) * 100, 2) AS 占比\nFROM fact_order fo\nJOIN dim_date dd ON fo.date_id = dd.date_id\nJOIN dim_product dp ON fo.product_id = dp.product_id\nWHERE dd.year = 2025\nGROUP BY dp.brand\nORDER BY 销售额 DESC",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "f09",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n  dr.province AS 省份,\n  SUM(fo.order_amount) / COUNT(*) AS 客单价\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025\nGROUP BY dr.province",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f10",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT dc.customer_name\nFROM fact_order fo\nJOIN dim_date dd ON fo.date_id = dd.date_id\nJOIN dim_customer dc ON fo.customer_id = dc.customer_id\nWHERE dd.year = 2025\nGROUP BY dc.customer_name\nORDER BY COUNT(*) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f11",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n    r.region_name AS 地区,\n    c.member_level AS 会员等级,\n    COUNT(f.order_id) AS 订单数\nFROM fact_order f\nJOIN dim_region r ON f.region_id = r.region_id\nJOIN dim_customer c ON f.customer_id = c.customer_id\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.date_id >= 20250101 AND d.date_id <= 20251231\nGROUP BY r.region_name, c.member_level\nORDER BY r.region_name, c.member_level",
+        "ex": 1,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "",
+        "qid": "f12",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT COUNT(DISTINCT t2.customer_id) \nFROM dim_product t1 \nJOIN fact_order t2 ON t1.product_id = t2.product_id \nJOIN dim_date t3 ON t2.date_id = t3.date_id \nWHERE t1.category = '手机数码' \n  AND t3.date_id >= 20250101 \n  AND t3.date_id <= 20251231",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f13",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT d.month, SUM(f.order_amount) AS cumulative_sales\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.year = 2025\nGROUP BY d.month\nORDER BY d.month",
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "qid": "f14",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT \n    dr.province AS 省份,\n    SUM(fo.order_quantity) AS 销量\nFROM fact_order fo\nJOIN dim_product dp ON fo.product_id = dp.product_id\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dp.category = '家用电器' \n    AND dd.year = 2025\nGROUP BY dr.province",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f15",
+        "level": "F",
+        "kind": "advanced"
+      },
+      {
+        "sql": "SELECT d.brand\nFROM fact_order f\nJOIN dim_product d ON f.product_id = d.product_id\nJOIN dim_date dt ON f.date_id = dt.date_id\nWHERE dt.date_id BETWEEN 20250101 AND 20251231\nGROUP BY d.brand\nORDER BY SUM(f.order_amount) / COUNT(*) DESC\nLIMIT 1",
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "qid": "f16",
+        "level": "F",
+        "kind": "advanced"
+      }
+    ]
+  },
+  "timings": {
+    "llm_only": 384.76020280001103,
+    "col_recall": 391.9405609999958,
+    "col_val_recall": 395.81399510000483,
+    "full_recall": 526.4373328000074,
+    "llm_filter": 578.444514199975,
+    "full": 563.5835871000018
+  },
+  "source_json": "eval/reports/nl2sql_20261018-222231.json"
+}

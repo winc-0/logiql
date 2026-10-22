@@ -5,6 +5,7 @@
 - 标注集：nl2sql_gold.jsonl，共 56 题，按 A–F 六档难度分组
 - 主指标：**Execution Accuracy（执行准确率）**
 - 生成时间：20261021-191836
+- 原始结果：`eval/reports/nl2sql_20261021-191836.json`
 
 ## 1. 逐层累加消融
 

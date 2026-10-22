@@ -1,0 +1,97 @@
+{
+  "stamp": "20261019-120252",
+  "tag": "",
+  "meta_config": "",
+  "dataset": "nl2sql_gold.jsonl",
+  "n_questions": 3,
+  "schema": {
+    "tables": 32,
+    "columns": 163,
+    "metrics": 7,
+    "schema_chars": 21296,
+    "schema_tokens_est": 11155
+  },
+  "strategies": {
+    "llm_only": [
+      {
+        "sql": "SELECT SUM(order_amount) AS 总销售额 FROM fact_order",
+        "elapsed_s": 7.53,
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 0,
+        "reason": "SQL 执行失败",
+        "error_detail": "",
+        "qid": "a01",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT COUNT(*) AS 订单数 FROM fact_order",
+        "elapsed_s": 7.51,
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 0,
+        "reason": "SQL 执行失败",
+        "error_detail": "",
+        "qid": "a02",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT SUM(order_quantity) AS total_quantity FROM fact_order",
+        "elapsed_s": 8.3,
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 0,
+        "reason": "SQL 执行失败",
+        "error_detail": "",
+        "qid": "a03",
+        "level": "A",
+        "kind": "aggregate"
+      }
+    ],
+    "full": [
+      {
+        "sql": "SELECT SUM(order_amount) AS total_sales FROM fact_order",
+        "elapsed_s": 15.54,
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 0,
+        "reason": "SQL 执行失败",
+        "error_detail": "",
+        "qid": "a01",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT COUNT(*) AS ORDER_COUNT FROM fact_order",
+        "elapsed_s": 16.13,
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 0,
+        "reason": "SQL 执行失败",
+        "error_detail": "",
+        "qid": "a02",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT SUM(daily_quantity) AS total_quantity FROM dws_order_daily",
+        "elapsed_s": 16.11,
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 0,
+        "reason": "SQL 执行失败",
+        "error_detail": "",
+        "qid": "a03",
+        "level": "A",
+        "kind": "aggregate"
+      }
+    ]
+  },
+  "timings": {
+    "llm_only": 8.304534499999136,
+    "full": 16.1318846999784
+  },
+  "source_json": "eval/reports/nl2sql_20261019-120252.json"
+}

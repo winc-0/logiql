@@ -115,6 +115,14 @@ def compare(small_path: Path, large_path: Path) -> str:
 
     add("# schema 规模交叉对比报告")
     add("")
+    add(f"- 小 schema 来源：`{small_path.as_posix()}`（tag: {small.get('tag') or '未标注'}）")
+    add(f"- 大 schema 来源：`{large_path.as_posix()}`（tag: {large.get('tag') or '未标注'}）")
+    commits = {p.get("git_commit") for p in (small, large) if p.get("git_commit")}
+    if len(commits) == 1:
+        add(f"- 代码版本：`{commits.pop()}`（两轮同一版本）")
+    elif len(commits) > 1:
+        add(f"- 代码版本：{', '.join(sorted(f'`{c}`' for c in commits))}（两轮版本不同，解读时需注意）")
+    add("")
     add("**实验设计**：题目完全相同（同一份标注集），只改变元数据规模；"
         "gold SQL 在两种条件下均已逐题验证可执行且结果非空，"
         "因此「schema 规模」是唯一的自变量。")

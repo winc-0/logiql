@@ -1,0 +1,166 @@
+{
+  "stamp": "20261019-122648",
+  "tag": "",
+  "meta_config": "",
+  "dataset": "nl2sql_gold.jsonl",
+  "n_questions": 12,
+  "schema": {
+    "tables": 32,
+    "columns": 163,
+    "metrics": 7,
+    "schema_chars": 21296,
+    "schema_tokens_est": 11155
+  },
+  "strategies": {
+    "full_recall": [
+      {
+        "sql": "SELECT SUM(order_amount) AS total_sales FROM fact_order",
+        "elapsed_s": 6.33,
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "error_detail": "",
+        "qid": "a01",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT COUNT(*) AS ORDER_COUNT FROM fact_order",
+        "elapsed_s": 6.06,
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "error_detail": "",
+        "qid": "a02",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT SUM(order_quantity) AS total_quantity FROM fact_order",
+        "elapsed_s": 6.49,
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "error_detail": "",
+        "qid": "a03",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT AVG(order_amount) AS AOV FROM fact_order",
+        "elapsed_s": 6.61,
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "error_detail": "",
+        "qid": "a04",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT MAX(order_amount) AS max_order_amount FROM fact_order",
+        "elapsed_s": 6.86,
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "error_detail": "",
+        "qid": "a05",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT COUNT(DISTINCT customer_id) AS customer_count FROM fact_order",
+        "elapsed_s": 6.78,
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "error_detail": "",
+        "qid": "a06",
+        "level": "A",
+        "kind": "aggregate"
+      },
+      {
+        "sql": "SELECT \n  dr.province AS 省份,\n  SUM(fo.order_amount) AS 销售额\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nJOIN dim_date dd ON fo.date_id = dd.date_id\nWHERE dd.year = 2025\nGROUP BY dr.province",
+        "elapsed_s": 7.57,
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "error_detail": "",
+        "qid": "b01",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n    dr.region_name AS 大区,\n    SUM(fo.order_amount) AS 销售额\nFROM fact_order fo\nJOIN dim_region dr ON fo.region_id = dr.region_id\nWHERE fo.date_id >= 20250101 AND fo.date_id <= 20251231\nGROUP BY dr.region_name",
+        "elapsed_s": 7.73,
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "error_detail": "",
+        "qid": "b02",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT category, SUM(daily_sales) AS sales FROM dws_order_daily WHERE stat_date >= 20250101 AND stat_date <= 20251231 GROUP BY category",
+        "elapsed_s": 7.88,
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "error_detail": "",
+        "qid": "b03",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  p.brand AS 品牌,\n  SUM(o.order_amount) AS 销售额\nFROM fact_order o\nJOIN dim_product p ON o.product_id = p.product_id\nWHERE o.date_id >= 20250101 AND o.date_id <= 20251231\nGROUP BY p.brand\nORDER BY 销售额 DESC",
+        "elapsed_s": 7.88,
+        "ex": 1,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "",
+        "error_detail": "",
+        "qid": "b04",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  d.quarter AS 季度,\n  SUM(f.order_amount) AS 销售额\nFROM fact_order f\nJOIN dim_date d ON f.date_id = d.date_id\nWHERE d.year = 2025\nGROUP BY d.quarter\nORDER BY \n  CASE d.quarter \n    WHEN 'Q1' THEN 1 \n    WHEN 'Q2' THEN 2 \n    WHEN 'Q3' THEN 3 \n    WHEN 'Q4' THEN 4 \n  END",
+        "elapsed_s": 8.83,
+        "ex": 1,
+        "ex_ordered": 1,
+        "executable": 1,
+        "reason": "",
+        "error_detail": "",
+        "qid": "b05",
+        "level": "B",
+        "kind": "group_by"
+      },
+      {
+        "sql": "SELECT \n  YEAR(STR_TO_DATE(CAST(date_id AS CHAR), '%Y%m%d')) AS year,\n  MONTH(STR_TO_DATE(CAST(date_id AS CHAR), '%Y%m%d')) AS month,\n  COUNT(*) AS ORDER_COUNT\nFROM fact_order\nWHERE date_id >= 20250101 AND date_id <= 20251231\nGROUP BY \n  YEAR(STR_TO_DATE(CAST(date_id AS CHAR), '%Y%m%d')),\n  MONTH(STR_TO_DATE(CAST(date_id AS CHAR), '%Y%m%d'))\nORDER BY year, month",
+        "elapsed_s": 9.09,
+        "ex": 0,
+        "ex_ordered": 0,
+        "executable": 1,
+        "reason": "结果集不一致",
+        "error_detail": "",
+        "qid": "b06",
+        "level": "B",
+        "kind": "group_by"
+      }
+    ]
+  },
+  "timings": {
+    "full_recall": 88.12524150003446
+  },
+  "source_json": "eval/reports/nl2sql_20261019-122648.json"
+}
