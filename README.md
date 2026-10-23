@@ -1,20 +1,20 @@
-# 仓配自助问数 LogiQL · 企业级 NL2SQL 智能问数系统
+# 仓配自助问数 · 企业级 NL2SQL 智能问数系统
 
 ![python](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white) ![langgraph](https://img.shields.io/badge/langgraph-12%20nodes-1F6FEB) ![fastapi](https://img.shields.io/badge/fastapi-SSE-009688?logo=fastapi&logoColor=white) ![vue](https://img.shields.io/badge/vue-3-42B883?logo=vuedotjs&logoColor=white) ![eval](https://img.shields.io/badge/eval-56%20cases%20%C2%B7%206%20ablations-D94F00)
 
 > 以**数据仓库元数据**为核心，用 LangGraph 编排多路召回与 SQL 生成，  
 > 让用户用自然语言提问，系统自动产出可执行 SQL 并返回结果。
 
-与「[履约知识助手 Warehouse-KB](https://github.com/winc-0/warehouse-kb)」（非结构化文档的 RAG 问答）配套：  
+与「[履约知识助手](https://github.com/winc-0/warehouse-kb)」（非结构化文档的 RAG 问答）配套：  
 **履约知识助手管文档，仓配自助问数管数据**，共同覆盖 LLM 在企业内落地的两类主要场景。
 
 ## 关于这个仓库
 
-**履约知识助手是一个完整可运行的 RAG 知识库系统，可按本文档在本地部署复现。** 要点：
+**仓配自助问数是一个完整可运行的 NL2SQL 智能问数系统，可按本文档在本地部署复现。** 要点：
 
-- 检索主链路基于 LangGraph 编排：多格式文档导入 → 三路混合召回 → RRF 融合 → 精排 → SSE 流式问答。
-- 自带一套离线评测体系（`eval/`）：六组策略消融、配对 bootstrap、全局检索对照与标注集构建工具。
-- **评测数字都是实际跑出来的**，`eval/results/` 与 `eval/README.md` 里有对应的报告与复现命令，任何人都能按文档复跑核对。
+- 主链路基于 LangGraph 编排（12 节点）：元数据三路异构召回 → 指标口径注入 → SQL 生成 → 校验纠错 → 执行返回。
+- 自带一套离线评测体系（`eval/`）：56 例题、六组策略消融、`selfcheck` 自检与结果看板，评测报告可自证来源。
+- **评测数字都是实际跑出来的**，`eval/reports/` 里有对应的报告与复现命令，任何人都能按文档复跑核对。
 
 ## 目录
 
