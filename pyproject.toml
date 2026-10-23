@@ -1,7 +1,7 @@
 [project]
 name = "zhishu"
 version = "0.1.0"
-description = "仓配自助问数 LogiQL · 基于元数据知识库与 LangGraph 的 NL2SQL 智能问数系统"
+description = "仓配自助问数 · 基于元数据知识库与 LangGraph 的 NL2SQL 智能问数系统"
 # 与履约知识助手保持一致，上限锁到 3.13 之前：若干依赖（torch / langchain 系）
 # 尚未提供 3.13+ 的 wheel，不设上限时 uv 会尝试为更高版本解析并失败
 requires-python = ">=3.11,<3.13"

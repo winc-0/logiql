@@ -1,7 +1,7 @@
 <template>
   <div class="chat-page">
     <header>
-      <div class="brand"><b>仓配自助问数 LogiQL</b><span>企业级 NL2SQL 智能问数</span></div>
+      <div class="brand"><b>仓配自助问数</b><span>企业级 NL2SQL 智能问数</span></div>
       <div class="spacer"></div>
       <span class="hint">{{ apiHint }}</span>
     </header>
