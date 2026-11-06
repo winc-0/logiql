@@ -1,0 +1,392 @@
+# 数仓数据质量规则
+#
+# 运行：python scripts/dq_check.py
+# 报告：docs/governance/dq_report.md
+#
+# 规则类型
+#   row_count  行数在范围内                      table, min, max
+#   unique     键唯一                            table, columns
+#   coverage   源表的取值在目标表里都有          table.column -> target_table.target_column
+#   not_null / enum / range / row_check          字段级检查，可加 max_rate 容忍比例
+#   reference  外键能在维表/主表里找到            table.column -> ref_table.ref_column
+#   reconcile  对账：left / right 两条 SQL 返回「键列 + v」，按键比较 v
+#              scope: both（两边键都要对上）/ left（以左边为准）/ common（只比共有的键）
+#              abs_tol / rel_tol：允许的绝对 / 相对误差
+#
+# 公共字段
+#   where       只检查满足条件的行
+#   severity    error / warn
+#   expect      默认 pass；写 fail 表示已登记的缺陷，必须同时写 known_issue 和 origin
+#   origin      planted = 造数时刻意埋的坑；found = 规则查出来、已登记暂不处理的真实问题
+#   category    默认按类型归类，口径一致性规则需要显式写
+
+rules:
+  # ================================================================ 表级
+  - id: fact_outbound_not_empty
+    type: row_count
+    table: fact_outbound
+    min: 1000
+    desc: 出库单事实表行数不能异常偏少
+
+  - id: dws_outbound_daily_not_empty
+    type: row_count
+    table: dws_outbound_daily
+    min: 1
+    desc: 出库日汇总表要有数据
+
+  - id: fact_outbound_pk_unique
+    type: unique
+    table: fact_outbound
+    columns: [outbound_id]
+    desc: 出库单号不能重复
+
+  - id: dws_outbound_daily_grain_unique
+    type: unique
+    table: dws_outbound_daily
+    columns: [stat_date, warehouse_id, category]
+    desc: 汇总表按「日期 + 仓库 + 品类」每组只有一行
+
+  - id: fact_signoff_one_per_outbound
+    type: unique
+    table: fact_signoff
+    columns: [outbound_id]
+    desc: 一张出库单最多一条签收记录
+
+  - id: fact_freight_settle_one_per_outbound
+    type: unique
+    table: fact_freight_settle
+    columns: [outbound_id]
+    desc: 一张出库单只结算一次运费
+
+  - id: ods_waybill_no_unique
+    type: unique
+    table: ods_waybill_raw
+    columns: [waybill_no]
+    desc: 贴源层运单号不重复（表说明里写了「含重复单」，用规则核实）
+
+  - id: fact_inventory_daily_grain_unique
+    type: unique
+    table: fact_inventory_daily
+    columns: [cargo_id, warehouse_id, date_id]
+    desc: 库存快照按「货品 + 仓库 + 日期」每组只有一行，否则求和会重复
+
+  - id: dim_date_covers_outbound
+    type: coverage
+    table: fact_outbound
+    column: date_id
+    target_table: dim_date
+    target_column: date_id
+    desc: 日期维表覆盖出库单的全部日期
+
+  - id: dws_covers_outbound_dates
+    type: coverage
+    table: fact_outbound
+    column: date_id
+    target_table: dws_outbound_daily
+    target_column: stat_date
+    desc: 汇总表覆盖出库单的全部日期
+    expect: fail
+    origin: planted
+    known_issue: >-
+      造数时刻意埋的坑：汇总表只回溯到 2025-09-30，2025 年 10 至 12 月缺失。
+      问 2025Q4 或全年合计时如果用汇总表，结果会偏小，必须回到 fact_outbound。
+
+  # ================================================================ 字段级
+  - id: fact_outbound_keys_not_null
+    type: row_check
+    table: fact_outbound
+    check: >-
+      shipper_id IS NOT NULL AND cargo_id IS NOT NULL AND date_id IS NOT NULL
+      AND warehouse_id IS NOT NULL AND carrier_id IS NOT NULL
+    desc: 出库单的货主、货品、日期、仓库、承运商都不能为空
+
+  - id: fact_outbound_amount_positive
+    type: range
+    table: fact_outbound
+    column: outbound_amount
+    min: 0.01
+    desc: 出库货值必须大于 0
+
+  - id: fact_outbound_quantity_positive
+    type: range
+    table: fact_outbound
+    column: outbound_quantity
+    min: 1
+    desc: 出库件数至少 1 件
+
+  - id: fact_outbound_ontime_implies_delivered
+    type: row_check
+    table: fact_outbound
+    check: "COALESCE(is_ontime_delivery, 0) <= COALESCE(is_delivered, 0)"
+    desc: 准时妥投的单子必须已经妥投
+
+  - id: fact_outbound_delivery_hours_when_delivered
+    type: row_check
+    table: fact_outbound
+    where: "is_delivered = 1"
+    check: "delivery_hours IS NOT NULL AND delivery_hours >= 0"
+    desc: 已妥投的单子必须有妥投时长
+
+  - id: dim_date_quarter_enum
+    type: enum
+    table: dim_date
+    column: quarter
+    values: [Q1, Q2, Q3, Q4]
+    desc: 季度只能是 Q1 到 Q4
+
+  - id: fact_delivery_status_enum
+    type: enum
+    table: fact_delivery
+    column: delivery_status
+    values: [已签收, 在途, 拒收, 派送失败]
+    desc: 派送状态在约定的四种之内
+
+  - id: fact_signoff_type_enum
+    type: enum
+    table: fact_signoff
+    column: signoff_type
+    values: [本人签收, 他人代收, 驿站代收, 智能柜]
+    desc: 签收方式在约定的四种之内
+
+  - id: fact_claim_status_enum
+    type: enum
+    table: fact_claim
+    column: claim_status
+    values: [已赔付, 审核中, 已驳回]
+    desc: 理赔状态在约定的三种之内
+
+  - id: fact_freight_settle_status_enum
+    type: enum
+    table: fact_freight_settle
+    column: settle_status
+    values: [已结算, 对账中, 有争议]
+    desc: 结算状态在约定的三种之内
+
+  - id: fact_freight_settle_paid_formula
+    type: row_check
+    table: fact_freight_settle
+    check: >-
+      (settle_status = '已结算' AND ABS(paid_freight - payable_freight - extra_fee) <= 0.01)
+      OR (settle_status <> '已结算' AND paid_freight = 0)
+    desc: 已结算的实付 = 应付 + 增值服务费；未结算的实付为 0
+
+  - id: fact_outbound_warehouse_ref
+    type: reference
+    table: fact_outbound
+    column: warehouse_id
+    ref_table: dim_warehouse
+    ref_column: warehouse_id
+    desc: 出库仓都能在仓库维表里找到
+
+  - id: fact_outbound_cargo_ref
+    type: reference
+    table: fact_outbound
+    column: cargo_id
+    ref_table: dim_cargo
+    ref_column: cargo_id
+    desc: 货品都能在货品维表里找到
+
+  - id: fact_outbound_shipper_ref
+    type: reference
+    table: fact_outbound
+    column: shipper_id
+    ref_table: dim_shipper
+    ref_column: shipper_id
+    desc: 货主都能在货主维表里找到
+
+  - id: fact_outbound_carrier_ref
+    type: reference
+    table: fact_outbound
+    column: carrier_id
+    ref_table: dim_carrier
+    ref_column: carrier_id
+    desc: 承运商都能在承运商维表里找到
+
+  - id: fact_signoff_outbound_ref
+    type: reference
+    table: fact_signoff
+    column: outbound_id
+    ref_table: fact_outbound
+    ref_column: outbound_id
+    desc: 签收记录都能对应到出库单
+
+  - id: fact_claim_outbound_ref
+    type: reference
+    table: fact_claim
+    column: outbound_id
+    ref_table: fact_outbound
+    ref_column: outbound_id
+    desc: 理赔单都能对应到出库单
+
+  # 以前造数脚本把日期当整数相加（20250131 + 2 = 20250133），这两条规则第一次运行时
+  # 查出了 160 多行不存在的日期。修复后保留规则，防止问题再出现
+  - id: fact_signoff_date_valid
+    type: reference
+    table: fact_signoff
+    column: signoff_date
+    where: "signoff_date <= 20251231"
+    ref_table: dim_date
+    ref_column: date_id
+    desc: 签收日期是真实存在的日期（不出现 20240132 这类值）
+
+  - id: fact_return_date_valid
+    type: reference
+    table: fact_return
+    column: date_id
+    where: "date_id <= 20251231"
+    ref_table: dim_date
+    ref_column: date_id
+    desc: 退货日期是真实存在的日期（不出现 20240132 这类值）
+
+  - id: dim_date_covers_signoff
+    type: reference
+    table: fact_signoff
+    column: signoff_date
+    ref_table: dim_date
+    ref_column: date_id
+    severity: warn
+    desc: 日期维表覆盖全部签收日期
+    expect: fail
+    origin: found
+    known_issue: >-
+      日期维表只到 2025-12-31，12 月底出库的单子在 2026 年初签收，这些签收日期关联不到日期维表，
+      按日期维表过滤时会被漏掉。dim_date 由 dw_expand.sql 生成，56 道评测题依赖它，暂不扩展。
+
+  - id: dim_date_covers_return
+    type: reference
+    table: fact_return
+    column: date_id
+    ref_table: dim_date
+    ref_column: date_id
+    severity: warn
+    desc: 日期维表覆盖全部退货日期
+    expect: fail
+    origin: found
+    known_issue: 与 dim_date_covers_signoff 同一个原因：日期维表只到 2025 年底，2026 年初的退货日期关联不到。
+
+  - id: ods_non_test_waybill_in_fact
+    type: reference
+    table: ods_waybill_raw
+    column: waybill_no
+    ref_table: fact_outbound
+    ref_column: outbound_id
+    where: "is_test = 0"
+    desc: 贴源层的正式运单（非测试单）都进了出库单事实表
+
+  - id: ods_low_amount_is_test
+    type: row_check
+    table: ods_waybill_raw
+    check: "amount_raw >= 10 OR is_test = 1"
+    desc: 贴源层货值低于 10 元的都应该是测试单，否则就是没被标记的异常值
+
+  # ================================================================ 跨表对账
+  - id: dws_amount_matches_fact
+    type: reconcile
+    scope: left  # 汇总表的每组都要在明细里找到；明细多出来的日期交给 coverage 规则
+    abs_tol: 0.01
+    desc: 汇总表每组（日期 + 仓库 + 品类）的货值 = 明细按同样分组求和
+    left: >-
+      SELECT stat_date AS d, warehouse_id AS w, category AS c, daily_outbound_amount AS v
+      FROM dws_outbound_daily
+    right: >-
+      SELECT f.date_id AS d, f.warehouse_id AS w, g.cargo_category AS c, SUM(f.outbound_amount) AS v
+      FROM fact_outbound f JOIN dim_cargo g ON f.cargo_id = g.cargo_id
+      GROUP BY f.date_id, f.warehouse_id, g.cargo_category
+
+  - id: dws_count_matches_fact
+    type: reconcile
+    scope: left  # 汇总表的每组都要在明细里找到；明细多出来的日期交给 coverage 规则
+    abs_tol: 0
+    desc: 汇总表每组的出库单量 = 明细按同样分组计数
+    left: >-
+      SELECT stat_date AS d, warehouse_id AS w, category AS c, daily_outbound_count AS v
+      FROM dws_outbound_daily
+    right: >-
+      SELECT f.date_id AS d, f.warehouse_id AS w, g.cargo_category AS c, COUNT(*) AS v
+      FROM fact_outbound f JOIN dim_cargo g ON f.cargo_id = g.cargo_id
+      GROUP BY f.date_id, f.warehouse_id, g.cargo_category
+
+  - id: dws_quantity_matches_fact
+    type: reconcile
+    scope: left  # 同上
+    abs_tol: 0
+    desc: 汇总表每组的出库件数 = 明细按同样分组求和
+    left: >-
+      SELECT stat_date AS d, warehouse_id AS w, category AS c, daily_quantity AS v
+      FROM dws_outbound_daily
+    right: >-
+      SELECT f.date_id AS d, f.warehouse_id AS w, g.cargo_category AS c, SUM(f.outbound_quantity) AS v
+      FROM fact_outbound f JOIN dim_cargo g ON f.cargo_id = g.cargo_id
+      GROUP BY f.date_id, f.warehouse_id, g.cargo_category
+
+  - id: item_amount_matches_header
+    type: reconcile
+    scope: both
+    abs_tol: 0.01
+    desc: 每张出库单的明细行货值之和 = 单头货值
+    left: >-
+      SELECT outbound_id AS k, SUM(item_amount) AS v FROM fact_outbound_item GROUP BY outbound_id
+    right: >-
+      SELECT outbound_id AS k, outbound_amount AS v FROM fact_outbound
+
+  - id: ods_amount_matches_fact
+    type: reconcile
+    scope: left
+    abs_tol: 0.01
+    desc: 贴源层正式运单的原始货值 = 出库单事实表的货值（清洗没有改动正常单）
+    left: >-
+      SELECT waybill_no AS k, amount_raw AS v FROM ods_waybill_raw WHERE is_test = 0
+    right: >-
+      SELECT outbound_id AS k, outbound_amount AS v FROM fact_outbound
+
+  - id: signoff_count_matches_delivered
+    type: reconcile
+    desc: 签收记录条数 = 出库单里已妥投的单数
+    left: >-
+      SELECT COUNT(*) AS v FROM fact_signoff
+    right: >-
+      SELECT COUNT(*) AS v FROM fact_outbound WHERE is_delivered = 1
+
+  # ================================================================ 口径一致性
+  # 同一个指标走两条路径算：正确路径之间必须一致；
+  # 走错层、选错表的路径会和正确口径出现偏差，规则把偏差量化出来
+  - id: delivery_rate_signoff_path_agrees
+    type: reconcile
+    category: 口径一致性
+    abs_tol: 0.0001
+    desc: 妥投率两条正确路径一致：出库单 is_delivered 均值 = 签收单数 / 出库单数
+    left: >-
+      SELECT 1.0 * SUM(is_delivered) / COUNT(*) AS v FROM fact_outbound
+    right: >-
+      SELECT 1.0 * (SELECT COUNT(DISTINCT outbound_id) FROM fact_signoff) / COUNT(*) AS v FROM fact_outbound
+
+  - id: delivery_rate_wrong_table
+    type: reconcile
+    category: 口径一致性
+    abs_tol: 0.0001
+    desc: 只在签收表范围内算妥投率，会和正确口径不一致
+    left: >-
+      SELECT 1.0 * SUM(is_delivered) / COUNT(*) AS v FROM fact_outbound
+    right: >-
+      SELECT 1.0 * SUM(f.is_delivered) / COUNT(*) AS v
+      FROM fact_outbound f JOIN fact_signoff s ON f.outbound_id = s.outbound_id
+    expect: fail
+    origin: planted
+    known_issue: >-
+      造数时刻意埋的坑：fact_signoff 只包含已签收的单子，以它为范围算妥投率恒为 100%，
+      比正确口径偏高。妥投率的分母必须是全部出库单。
+
+  - id: amount_2025_dws_vs_fact
+    type: reconcile
+    category: 口径一致性
+    rel_tol: 0.0001
+    desc: 2025 年出库货值，用汇总表算和用明细表算应该一样
+    left: >-
+      SELECT SUM(outbound_amount) AS v FROM fact_outbound WHERE date_id BETWEEN 20250101 AND 20251231
+    right: >-
+      SELECT SUM(daily_outbound_amount) AS v FROM dws_outbound_daily WHERE stat_date BETWEEN 20250101 AND 20251231
+    expect: fail
+    origin: planted
+    known_issue: >-
+      与 dws_covers_outbound_dates 是同一个缺陷：汇总表缺 2025 年 10 至 12 月，
+      用它算全年货值会少掉第四季度。这条规则把「少多少」量化出来。

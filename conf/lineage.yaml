@@ -1,0 +1,136 @@
+# 数仓字段血缘
+#
+# 检查与报告：python scripts/check_lineage.py
+# 查某个字段的来龙去脉：python scripts/check_lineage.py --column dws_outbound_daily.daily_outbound_amount
+# 查改一个字段会影响谁：python scripts/check_lineage.py --impact dim_cargo.cargo_category
+#
+# 写法
+#   tables.<表>.layer     分层：ODS 贴源 / DWD 明细 / DWS 汇总 / ADS 应用 / DIM 维度
+#   tables.<表>.system    整张表直接从某个源系统同步，没单独写的字段都继承它
+#   tables.<表>.columns   单独说明的字段：
+#       from         上游字段（表.字段），可以是多个
+#       system       这个字段直接来自哪个源系统
+#       transform    加工方式
+#       verified_by  用数据验证过这条加工关系的质量规则（conf/dq_rules.yaml 里的 id）
+#
+# 说明：本项目的数据是脚本生成的，下面的源系统按真实仓配企业的系统划分来声明，
+# 描述的是「这份数据在真实环境里应该从哪来」。标了 verified_by 的加工关系，
+# 由对账规则在实际数据上验证过；没标的只是声明。
+
+systems:
+  WMS: 仓储管理系统（入库、出库、库存、拣货、退货）
+  TMS: 运输管理系统（承运商派送、签收、干线运输）
+  FIN: 财务结算系统（运费结算、仓成本、理赔赔付）
+  MDM: 主数据（仓库、货品、货主、承运商等档案）
+  IOT: 设备物联网平台（叉车、AGV、分拣线运行数据）
+  CAL: 日历（脚本生成的日期维度）
+
+tables:
+  # ============================================================== DIM 维度
+  dim_date:            {layer: DIM, system: CAL}
+  dim_warehouse:       {layer: DIM, system: MDM}
+  dim_cargo:           {layer: DIM, system: MDM}
+  dim_shipper:         {layer: DIM, system: MDM}
+  dim_carrier:         {layer: DIM, system: MDM}
+  dim_consignee:       {layer: DIM, system: MDM}
+  dim_destination:     {layer: DIM, system: MDM}
+  dim_transport_line:  {layer: DIM, system: MDM}
+  dim_service_level:   {layer: DIM, system: MDM}
+  dim_claim_type:      {layer: DIM, system: MDM}
+  dim_cargo_sku:       {layer: DIM, system: MDM}
+  dim_staff:           {layer: DIM, system: MDM}
+  dim_shift:           {layer: DIM, system: MDM}
+  dim_zone:            {layer: DIM, system: MDM}
+  dim_equipment:       {layer: DIM, system: MDM}
+  dim_supplier:        {layer: DIM, system: MDM}
+  dim_cargo_brand:
+    layer: DIM
+    system: MDM
+    columns:
+      brand_name:
+        from: dim_cargo.cargo_brand
+        transform: 从货品档案的品牌字段去重得到；和 dim_cargo.cargo_brand 是同一语义的两处存放
+
+  # ============================================================== ODS 贴源
+  ods_waybill_raw:
+    layer: ODS
+    system: TMS
+    note: 原始运单的部分同步，含测试单与异常货值，只用于溯源排查，不作为下游的输入
+
+  # ============================================================== DWD 明细
+  fact_outbound:
+    layer: DWD
+    note: 出库时由 WMS 写入，妥投后用 TMS 的签收结果回填
+    columns:
+      outbound_id:        {system: WMS, transform: 出库单号}
+      shipper_id:         {system: WMS}
+      cargo_id:           {system: WMS}
+      warehouse_id:       {system: WMS}
+      carrier_id:         {system: WMS, transform: 出库时分配的承运商}
+      date_id:            {system: WMS, transform: 出库时间取日期，转成 YYYYMMDD}
+      outbound_quantity:  {system: WMS}
+      outbound_hours:     {system: WMS, transform: 下单到出库的小时数}
+      outbound_amount:
+        from: fact_outbound_item.item_amount
+        transform: 按出库单汇总明细行货值
+        verified_by: item_amount_matches_header
+      is_ontime_outbound:
+        from: fact_outbound.outbound_hours
+        transform: 出库时效达标记 1
+      delivery_hours:     {system: TMS, transform: 出库到签收的小时数}
+      is_delivered:
+        from: fact_signoff.outbound_id
+        transform: 有签收记录记 1，否则记 0
+        verified_by: [signoff_count_matches_delivered, delivery_rate_signoff_path_agrees]
+      is_ontime_delivery:
+        from: [fact_outbound.is_delivered, fact_outbound.delivery_hours]
+        transform: 已妥投且妥投时长达标记 1
+        verified_by: fact_outbound_ontime_implies_delivered
+      freight_amount:     {system: FIN, transform: 对货主应收的运费}
+
+  fact_outbound_item:   {layer: DWD, system: WMS}
+  fact_inbound:         {layer: DWD, system: WMS}
+  fact_inventory_daily: {layer: DWD, system: WMS, note: 每周闭仓快照，不是流水}
+  fact_picking:         {layer: DWD, system: WMS}
+  fact_return:          {layer: DWD, system: WMS}
+  fact_delivery:        {layer: DWD, system: TMS, note: 派送过程表，一单可能多次派送}
+  fact_signoff:         {layer: DWD, system: TMS, note: 只包含已签收的单子}
+  fact_transport:       {layer: DWD, system: TMS}
+  fact_claim:           {layer: DWD, system: FIN}
+  fact_warehouse_cost:  {layer: DWD, system: FIN}
+  fact_equipment_op:    {layer: DWD, system: IOT}
+  fact_freight_settle:
+    layer: DWD
+    system: FIN
+    columns:
+      paid_freight:
+        from: [fact_freight_settle.payable_freight, fact_freight_settle.extra_fee, fact_freight_settle.settle_status]
+        transform: 已结算的为应付运费加增值服务费，未结算的为 0
+        verified_by: fact_freight_settle_paid_formula
+
+  # ============================================================== DWS 汇总
+  dws_outbound_daily:
+    layer: DWS
+    note: 按「日期 + 仓库 + 品类」预聚合，只回溯到 2025-09-30
+    columns:
+      stat_date:
+        from: fact_outbound.date_id
+        transform: 分组键，只取 2025-09-30 及以前（缺口由质量规则 dws_covers_outbound_dates 登记）
+      warehouse_id:
+        from: fact_outbound.warehouse_id
+        transform: 分组键
+      category:
+        from: [fact_outbound.cargo_id, dim_cargo.cargo_category]
+        transform: 用货品 ID 关联货品维表取品类，作为分组键
+      daily_outbound_amount:
+        from: fact_outbound.outbound_amount
+        transform: 按分组求和
+        verified_by: dws_amount_matches_fact
+      daily_outbound_count:
+        from: fact_outbound.outbound_id
+        transform: 按分组计数
+        verified_by: dws_count_matches_fact
+      daily_quantity:
+        from: fact_outbound.outbound_quantity
+        transform: 按分组求和
+        verified_by: dws_quantity_matches_fact
