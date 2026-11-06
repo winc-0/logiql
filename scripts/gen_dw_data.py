@@ -124,6 +124,11 @@ BASE_OUTBOUND_HOURS = 18
 PRESET_RANGE = (dt.date(2025, 1, 1), dt.date(2025, 3, 31))
 
 
+# dw_expand.sql 用这个种子生成。gen_dw_large.py 要按同一个种子重新推导出库单，
+# 两边必须共用这一个常量，否则派生表会关联到一批并不存在的出库单
+DEFAULT_SEED = 20251018
+
+
 def build_rows(seed: int, start_year: int, end_year: int):
     """生成 dim_date 与 fact_outbound 的数据行。返回 (日期行列表, 出库行列表)。"""
     rng = random.Random(seed)
@@ -281,7 +286,7 @@ def render_sql(date_rows, outbound_rows) -> str:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="生成仓配自助问数 dw 仓配履约数据仓库业务数据")
-    ap.add_argument("--seed", type=int, default=20251018, help="随机种子，决定数据内容")
+    ap.add_argument("--seed", type=int, default=DEFAULT_SEED, help="随机种子，决定数据内容")
     ap.add_argument("--start", type=int, default=2024, help="起始年份")
     ap.add_argument("--end", type=int, default=2025, help="结束年份")
     ap.add_argument(

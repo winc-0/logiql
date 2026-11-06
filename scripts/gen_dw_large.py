@@ -893,7 +893,7 @@ def build_rows(outbound_rows, shippers: list[tuple], cargos: list[tuple],
         if is_dlv:
             signoff_id += 1
             data["fact_signoff"].append(
-                (signoff_id, ob_id, date_id + int(dlv_hours // 24) if dlv_hours else date_id,
+                (signoff_id, ob_id, _add_days(date_id, int(dlv_hours // 24)) if dlv_hours else date_id,
                  rng.choice(SIGNOFF_TYPES), rng.choice([1, 1, 1, 0]),
                  1 if rng.random() < 0.05 else 0)
             )
@@ -912,7 +912,7 @@ def build_rows(outbound_rows, shippers: list[tuple], cargos: list[tuple],
         if rng.random() < 0.03:
             return_id += 1
             data["fact_return"].append(
-                (return_id, ob_id, wh_id, date_id + rng.randint(2, 10),
+                (return_id, ob_id, wh_id, _add_days(date_id, rng.randint(2, 10)),
                  max(1, int(qty * rng.uniform(0.3, 1.0))),
                  rng.choice(RETURN_REASONS), rng.choice([1, 1, 0]))
             )
@@ -947,15 +947,23 @@ def build_rows(outbound_rows, shippers: list[tuple], cargos: list[tuple],
                  rng.randint(2, 48), rng.choice([1, 1, 1, 0]))
             )
 
-    # 库存快照：每周一次，抽样 SKU
+    # 库存快照：每周一次，抽样 SKU。表的粒度是「货品 + 仓库 + 日期」，同一货品的
+    # 多个 SKU 落到同一个仓时要合并成一行，否则同一天同一仓会出现多行，求和重复计算
     sku_ids = [r[0] for r in data["dim_cargo_sku"]]
     for did in sorted({r[3] for r in outbound_rows})[::7]:
+        snap: dict[tuple, list] = {}
         for sid in rng.sample(sku_ids, k=min(len(sku_ids), 18)):
             q = rng.randint(0, 500)
             cargo_of = next((s[1] for s in data["dim_cargo_sku"] if s[0] == sid), None)
+            wid = rng.choice(wh_ids)
+            amt, days = round(q * rng.uniform(10, 800), 2), rng.randint(1, 90)
+            cur = snap.setdefault((cargo_of, wid), [0, 0.0, 0])
+            cur[0] += q
+            cur[1] = round(cur[1] + amt, 2)
+            cur[2] = max(cur[2], days)
+        for (cargo_of, wid), (q, amt, days) in snap.items():
             data["fact_inventory_daily"].append(
-                (len(data["fact_inventory_daily"]) + 1, cargo_of, rng.choice(wh_ids), did,
-                 q, round(q * rng.uniform(10, 800), 2), rng.randint(1, 90))
+                (len(data["fact_inventory_daily"]) + 1, cargo_of, wid, did, q, amt, days)
             )
 
     # 仓成本：每月每仓一条
@@ -1003,17 +1011,25 @@ def build_rows(outbound_rows, shippers: list[tuple], cargos: list[tuple],
     return data
 
 
+def _add_days(date_id: int, days: int) -> int:
+    """日期加天数。不能直接 20250131 + 2，那样会得到不存在的 20250133。"""
+    d = dt.datetime.strptime(str(date_id), "%Y%m%d").date() + dt.timedelta(days=days)
+    return int(d.strftime("%Y%m%d"))
+
+
 def _d2s(date_id: int) -> str:
     """20250101 -> '2025-01-01'"""
     s = str(date_id)
     return f"{s[:4]}-{s[4:6]}-{s[6:8]}"
 
 
-def load_base_context(seed: int, y0: int, y1: int):
+def load_base_context(y0: int, y1: int):
     """复用 scripts/gen_dw_data.py 的业务档案与出库行，保证两套脚本口径完全一致。
 
     同库里的 fact_outbound / dim_date 由 dw_expand.sql 写入，这里按同样的随机种子
-    重新推导一次，使新增外键表能准确关联到既有出库单。
+    （gen_dw_data.DEFAULT_SEED）重新推导一次，使新增外键表能准确关联到既有出库单。
+    以前这里用的是本脚本的 --seed，和 dw_expand.sql 的种子不同，推导出的是另一批
+    出库单，数据质量规则对账时才发现派生表和 fact_outbound 对不上。
     """
     import importlib.util
 
@@ -1022,7 +1038,7 @@ def load_base_context(seed: int, y0: int, y1: int):
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)  # 该模块顶层只有常量与函数定义，不会执行写入
 
-    _, outbound_rows = mod.build_rows(seed, y0, y1)
+    _, outbound_rows = mod.build_rows(mod.DEFAULT_SEED, y0, y1)
     return mod.SHIPPERS, mod.CARGOS, mod.WAREHOUSES, outbound_rows
 
 
@@ -1188,7 +1204,7 @@ def main() -> None:
     ap.add_argument("--report", action="store_true", help="只打印规模统计")
     args = ap.parse_args()
 
-    shippers, cargos, warehouses, outbound_rows = load_base_context(args.seed, 2024, 2025)
+    shippers, cargos, warehouses, outbound_rows = load_base_context(2024, 2025)
     data = build_rows(outbound_rows, shippers, cargos, warehouses, seed=args.seed + 1)
 
     n_cols = sum(len(t.cols) for t in TABLES)
