@@ -62,6 +62,15 @@ _LOCKING_READ = re.compile(
     re.IGNORECASE,
 )
 
+# 不写数据、却能长时间占住连接或加锁的函数。`SELECT SLEEP(100)` 在语法上是只读的，
+# 但几次并发就能占满连接池；GET_LOCK 会持有命名锁，*_POS_WAIT 会一直等复制位点
+_DANGEROUS_FUNCTIONS = re.compile(
+    r"\b(sleep|benchmark|get_lock|release_lock|release_all_locks|is_used_lock|is_free_lock|"
+    r"master_pos_wait|source_pos_wait|wait_for_executed_gtid_set|"
+    r"wait_until_sql_thread_after_gtids)\s*\(",
+    re.IGNORECASE,
+)
+
 # 行注释 / 块注释 / 字符串字面量，判断前先剥掉，避免注释里的关键字造成误判
 # 注意：不能把 `;` 当注释起始符吃掉，否则多语句检测会失效
 _LINE_COMMENT = re.compile(r"(--\s|#)[^\n]*", re.IGNORECASE)
@@ -139,6 +148,10 @@ def is_read_only(sql: str) -> tuple[bool, str]:
 
     if _LOCKING_READ.search(statement):
         return False, "加锁读（FOR UPDATE / FOR SHARE / LOCK IN SHARE MODE）不属于只读查询，已拒绝"
+
+    func = _DANGEROUS_FUNCTIONS.search(statement)
+    if func:
+        return False, f"调用了会长时间占用连接或加锁的函数 `{func.group(1).upper()}()`，已拒绝"
 
     # 全文扫描兜底：拦住 `WITH ... DELETE` 这类首关键字合法但本质是写操作的语句。
     # 元数据类语句（SHOW / DESCRIBE / EXPLAIN）跳过——它们不是可执行语句，

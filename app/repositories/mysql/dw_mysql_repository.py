@@ -1,8 +1,15 @@
 import datetime as dt
 import decimal
+import os
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.log import logger
+
+# 单条查询的最长执行时间（毫秒）。只读守卫拦不住全表扫描这类慢查询，
+# 这里让 MySQL 到时自动中断 SELECT，避免一条慢 SQL 长时间占住连接
+SQL_TIMEOUT_MS = int(os.getenv("DW_SQL_TIMEOUT_MS", "30000"))
 
 
 class DwMysqlRepository:
@@ -104,9 +111,19 @@ class DwMysqlRepository:
         :param sql:
         :return:
         """
+        await self._apply_timeout()
         # [(),(),()]
         result =await self.session.execute(text(sql))
         # 调整格式 [{RowMapping对象（key:value）},{}]
         return [dict(row) for row in result.mappings().fetchall()]
+
+    async def _apply_timeout(self):
+        """设置当前会话的 SELECT 超时。MySQL 5.7.8 以上支持，设置失败只记警告，不影响查询。"""
+        if SQL_TIMEOUT_MS <= 0:
+            return
+        try:
+            await self.session.execute(text(f"SET SESSION MAX_EXECUTION_TIME = {SQL_TIMEOUT_MS}"))
+        except Exception as e:  # noqa: BLE001 - 例如 MariaDB 没有这个变量
+            logger.warning(f"设置查询超时失败，本次查询不限时：{e}")
 
 

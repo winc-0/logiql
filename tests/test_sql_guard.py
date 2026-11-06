@@ -58,6 +58,10 @@ class TestReadOnlyAccepted(unittest.TestCase):
         self._ok("SELECT INSERT(warehouse_name, 1, 2, '华东') FROM fact_outbound")
         self._ok("SELECT REPLACE(a, 'x', 'y'), REPLACE (b, 'p', 'q') FROM t")
 
+    def test_同名列与字符串不误伤(self):
+        self._ok("SELECT sleep_minutes FROM shifts")
+        self._ok("SELECT * FROM notes WHERE body = 'sleep(1)'")
+
     def test_反引号标识符不误伤(self):
         # 反引号里的是列名，哪怕整词就是关键字
         self._ok("SELECT `update` FROM t")
@@ -124,6 +128,13 @@ class TestWriteRejected(unittest.TestCase):
         self._no("SELECT * FROM orders /*!50000 INTO OUTFILE '/tmp/x' */", "可执行注释")
         self._no("SELECT 1 /*!50000 ; DROP TABLE orders */", "可执行注释")
         self._no("/*!50000 DELETE FROM orders */", "可执行注释")
+
+    def test_占用连接或加锁的函数(self):
+        # 语法上是只读，但能长时间占住连接、持有锁或压满 CPU
+        self._no("SELECT SLEEP(100)", "SLEEP")
+        self._no("select benchmark(1000000000, md5('a'))", "BENCHMARK")
+        self._no("SELECT GET_LOCK('k', 10)", "GET_LOCK")
+        self._no("SELECT * FROM orders WHERE sleep (5) = 0", "SLEEP")
 
     def test_for_share加锁读(self):
         # MySQL 8 里 FOR SHARE 等价于 LOCK IN SHARE MODE，同样会占共享锁

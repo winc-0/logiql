@@ -255,7 +255,9 @@ npm run build   # 生产态：产物 frontend/dist 交给后端，访问 :8010 �
 
 开发态 Vite 在 5173、后端在 8010，端口不同源，靠 `vite.config.js` 的 `/api` 代理转发，
 所以浏览器不感知跨域。若要把前端部署到别的域名，需要在后端放开跨域
-（`CORS_ORIGINS` 追加，默认只放开本机来源）。公网部署时务必设置 `ALLOW_FILE_ORIGIN=false`。
+（`CORS_ORIGINS` 追加，默认只放开本机来源）。`file://` 页面的 `null` 来源默认不放开，
+本地直接双击打开页面调试时才设置 `ALLOW_FILE_ORIGIN=true`。`/api/query` 本身没有鉴权，
+公网部署前要在网关或应用层加上。
 
 ### 结果自动图表化
 
@@ -628,7 +630,9 @@ logiql/
   但它解析的是 SQL 文本：数据库账号本身仍应只授予 `SELECT` 权限，
   这才是最后一道防线。另外它不做语义判断——
   `SELECT` 把整张千万级表捞出来（无 `LIMIT` 的全表扫描）不属于"写"，
-  拦不住，需要配合慢查询与代价预估（见 Roadmap）
+  守卫拦不住，现在靠执行超时兜底：`DW_SQL_TIMEOUT_MS`（默认 30 秒）通过 MySQL 的
+  `MAX_EXECUTION_TIME` 中断慢查询，更细的代价预估见 Roadmap。
+  `SLEEP()`、`BENCHMARK()`、`GET_LOCK()` 这类不写数据但会占住连接或加锁的函数，守卫会直接拒绝
 - **守卫是关键词级判断，不是 SQL 解析器**。已有的对抗用例（多语句注入、`WITH ... DELETE`、
   `INTO OUTFILE`、`/*! */` 可执行注释、`FOR UPDATE` / `FOR SHARE`）都写进了
   `tests/test_sql_guard.py`，但这是**枚举而非穷举**——真要严格，得用 `sqlparse` /

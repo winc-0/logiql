@@ -24,9 +24,9 @@ _origins = [
     "http://127.0.0.1:8000",
 ]
 # "null" 是 file:// 打开页面时浏览器带的 origin。放开它意味着本机任意
-# HTML 文件都能调后端——本地开发可以接受，公网部署时必须关掉
-# （设置 ALLOW_FILE_ORIGIN=false）
-if os.getenv("ALLOW_FILE_ORIGIN", "true").lower() not in ("0", "false", "no"):
+# HTML 文件都能带着凭证调后端，所以默认关闭；需要直接双击打开页面调试时，
+# 再设置 ALLOW_FILE_ORIGIN=true
+if os.getenv("ALLOW_FILE_ORIGIN", "false").lower() in ("1", "true", "yes"):
     _origins.append("null")
 _origins.extend(o.strip() for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip())
 app.add_middleware(
